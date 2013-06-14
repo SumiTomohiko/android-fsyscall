@@ -1,6 +1,9 @@
 package jp.gr.java_conf.neko_daisuki.android.nexec.client;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -13,6 +16,39 @@ import jp.gr.java_conf.neko_daisuki.nexec.client.NexecClient;
 
 public class MainActivity extends Activity {
 
+    private static class EditTextOutputStream extends OutputStream {
+
+        private EditText mEditText;
+        private List<Byte> mLine;
+
+        public EditTextOutputStream(EditText editText) {
+            mEditText = editText;
+            mLine = new ArrayList<Byte>();
+        }
+
+        public void write(int b) {
+            byte n = (byte)(b & 0xff);
+            if (n == 0x0d) {
+                return;
+            }
+            if (n != 0x0a) {
+                mLine.add(Byte.valueOf(n));
+                return;
+            }
+            String line = new String(unboxing(mLine.toArray(new Byte[0])));
+            mEditText.append(line);
+            mLine.clear();
+        }
+
+        private byte[] unboxing(Byte[] a) {
+            byte[] b = new byte[a.length];
+            for (int i = 0; i < a.length; i++) {
+                b[i] = a[i].byteValue();
+            }
+            return b;
+        }
+    }
+
     private class RunButtonOnClickListener implements View.OnClickListener {
 
         public void onClick(View view) {
@@ -20,8 +56,9 @@ public class MainActivity extends Activity {
             String host = mHostEdit.getText().toString();
             int port = Integer.parseInt(mPortEdit.getText().toString());
             String[] args = new String[] { mArgsEdit.getText().toString() };
+            EditTextOutputStream stdout = new EditTextOutputStream(mStdoutEdit);
             try {
-                nexec.run(host, port, args);
+                nexec.run(host, port, args, System.in, stdout, System.err);
             }
             catch (InterruptedException e) {
                 e.printStackTrace();
@@ -35,6 +72,7 @@ public class MainActivity extends Activity {
     private EditText mHostEdit;
     private EditText mPortEdit;
     private EditText mArgsEdit;
+    private EditText mStdoutEdit;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -54,6 +92,7 @@ public class MainActivity extends Activity {
         mHostEdit = (EditText)findViewById(R.id.host_edit);
         mPortEdit = (EditText)findViewById(R.id.port_edit);
         mArgsEdit = (EditText)findViewById(R.id.args_edit);
+        mStdoutEdit = (EditText)findViewById(R.id.stdout_edit);
     }
 
     static {

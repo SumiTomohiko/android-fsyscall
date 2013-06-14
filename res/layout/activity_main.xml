@@ -43,6 +43,11 @@
             android:layout_height="wrap_content"
             android:text="/bin/echo"/>
     </LinearLayout>
+    <EditText
+        android:id="@+id/stdout_edit"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"/>
     <Button
         android:id="@+id/run_button"
         android:layout_width="fill_parent"
