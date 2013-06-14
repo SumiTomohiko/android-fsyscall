@@ -1,4 +1,4 @@
-package jp.gr.java_conf.neko_daisuki.android.fsyscallclient;
+package jp.gr.java_conf.neko_daisuki.android.nexec.client;
 
 import android.os.Bundle;
 import android.app.Activity;
