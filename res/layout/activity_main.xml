@@ -3,46 +3,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-    <LinearLayout
+    <TableLayout
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Host"/>
-        <EditText
-            android:id="@+id/host_edit"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="neko-daisuki.ddo.jp"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Port"/>
-        <EditText
-            android:id="@+id/port_edit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="57005"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Command"/>
-        <EditText
-            android:id="@+id/args_edit"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="/bin/echo"/>
-    </LinearLayout>
+        android:layout_height="wrap_content"
+        android:stretchColumns="1">
+        <TableRow>
+            <TextView android:text="Host"/>
+            <EditText
+                android:id="@+id/host_edit"
+                android:text="neko-daisuki.ddo.jp"/>
+        </TableRow>
+        <TableRow>
+            <TextView android:text="Port"/>
+            <EditText android:id="@+id/port_edit" android:text="57005"/>
+        </TableRow>
+        <TableRow>
+            <TextView android:text="Command"/>
+            <EditText android:id="@+id/args_edit" android:text="/bin/echo"/>
+        </TableRow>
+    </TableLayout>
     <EditText
         android:id="@+id/stdout_edit"
         android:layout_width="fill_parent"
