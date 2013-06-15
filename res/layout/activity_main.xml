@@ -29,8 +29,22 @@
                 android:text="/bin/echo"/>
         </TableRow>
     </TableLayout>
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Standard output"/>
     <EditText
         android:id="@+id/stdout_edit"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        android:typeface="monospace"/>
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Standard error"/>
+    <EditText
+        android:id="@+id/stderr_edit"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_weight="1"
