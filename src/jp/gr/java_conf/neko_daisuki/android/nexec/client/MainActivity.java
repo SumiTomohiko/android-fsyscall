@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
             NexecClient nexec = new NexecClient();
             String host = mHostEdit.getText().toString();
             int port = Integer.parseInt(mPortEdit.getText().toString());
-            String[] args = new String[] { mArgsEdit.getText().toString() };
+            String[] args = mArgsEdit.getText().toString().split("\\s");
             EditTextOutputStream stdout = new EditTextOutputStream(mStdoutEdit);
             try {
                 nexec.run(host, port, args, System.in, stdout, System.err);
