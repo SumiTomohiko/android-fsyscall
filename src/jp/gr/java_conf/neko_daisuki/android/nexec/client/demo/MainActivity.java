@@ -72,7 +72,7 @@ public class MainActivity extends Activity {
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if ((requestCode != REQUEST_CONFIRM) && (resultCode != RESULT_OK)) {
+        if ((requestCode != REQUEST_CONFIRM) || (resultCode != RESULT_OK)) {
             return;
         }
         Intent intent = new Intent();
