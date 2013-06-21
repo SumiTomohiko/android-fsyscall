@@ -1,10 +1,5 @@
 package jp.gr.java_conf.neko_daisuki.android.nexec.client.demo;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.StrictMode;
