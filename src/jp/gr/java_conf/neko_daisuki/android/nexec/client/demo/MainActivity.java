@@ -1,4 +1,4 @@
-package jp.gr.java_conf.neko_daisuki.android.nexec.client;
+package jp.gr.java_conf.neko_daisuki.android.nexec.client.demo;
 
 import java.io.IOException;
 import java.io.OutputStream;
