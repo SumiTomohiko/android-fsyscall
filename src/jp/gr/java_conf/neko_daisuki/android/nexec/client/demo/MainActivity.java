@@ -1,68 +1,47 @@
 package jp.gr.java_conf.neko_daisuki.android.nexec.client.demo;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.StrictMode;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
 
-import jp.gr.java_conf.neko_daisuki.nexec.client.NexecClient;
-
 public class MainActivity extends Activity {
 
-    private static class EditTextOutputStream extends OutputStream {
+    private class Connection implements ServiceConnection {
 
-        private EditText mEditText;
-        private List<Byte> mLine;
-
-        public EditTextOutputStream(EditText editText) {
-            mEditText = editText;
-            mLine = new ArrayList<Byte>();
+        public void onServiceConnected(ComponentName className, IBinder service) {
         }
 
-        public void write(int b) {
-            byte n = (byte)(b & 0xff);
-            if (n == 0x0d) {
-                return;
-            }
-            if (n != 0x0a) {
-                mLine.add(Byte.valueOf(n));
-                return;
-            }
-            String line = new String(unboxing(mLine.toArray(new Byte[0])));
-            mEditText.append(line);
-            mLine.clear();
-        }
-
-        private byte[] unboxing(Byte[] a) {
-            byte[] b = new byte[a.length];
-            for (int i = 0; i < a.length; i++) {
-                b[i] = a[i].byteValue();
-            }
-            return b;
+        public void onServiceDisconnected(ComponentName className) {
         }
     }
 
     private class RunButtonOnClickListener implements View.OnClickListener {
 
         public void onClick(View view) {
-            NexecClient nexec = new NexecClient();
-            String host = mHostEdit.getText().toString();
-            int port = Integer.parseInt(mPortEdit.getText().toString());
-            String[] args = mArgsEdit.getText().toString().split("\\s");
-            EditTextOutputStream stdout = new EditTextOutputStream(mStdoutEdit);
-            try {
-                nexec.run(host, port, args, System.in, stdout, System.err);
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
+            Intent intent = new Intent();
+            intent.setClassName(PACKAGE, getClassName("MainActivity"));
+            intent.putExtra("HOST", getEditText(mHostEdit));
+            intent.putExtra("PORT", Integer.parseInt(getEditText(mPortEdit)));
+            intent.putExtra("ARGS", getEditText(mArgsEdit).split("\\s"));
+            startActivityForResult(intent, REQUEST_CONFIRM);
         }
     }
+
+    private static final String PACKAGE = "jp.gr.java_conf.neko_daisuki.android.nexec.client";
+    private static final int REQUEST_CONFIRM = 0;
+
+    private Messenger mService;
+    private Connection mConnection;
 
     private EditText mHostEdit;
     private EditText mPortEdit;
@@ -81,6 +60,8 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mConnection = new Connection();
+
         View runButton = findViewById(R.id.run_button);
         runButton.setOnClickListener(new RunButtonOnClickListener());
 
@@ -90,8 +71,27 @@ public class MainActivity extends Activity {
         mStdoutEdit = (EditText)findViewById(R.id.stdout_edit);
     }
 
-    static {
-        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitAll().build());
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if ((requestCode != REQUEST_CONFIRM) && (resultCode != RESULT_OK)) {
+            return;
+        }
+        Intent intent = new Intent();
+        intent.setClassName(PACKAGE, getClassName("MainService"));
+        copySessionId(intent, data);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    private void copySessionId(Intent dest, Intent src) {
+        String key = "SESSION_ID";
+        dest.putExtra(key, src.getStringExtra(key));
+    }
+
+    private String getEditText(EditText view) {
+        return view.getText().toString();
+    }
+
+    private String getClassName(String name) {
+        return String.format("%s.%s", PACKAGE, name);
     }
 }
 
