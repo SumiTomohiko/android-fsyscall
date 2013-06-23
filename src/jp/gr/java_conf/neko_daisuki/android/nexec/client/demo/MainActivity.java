@@ -22,7 +22,6 @@ import android.util.SparseArray;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import jp.gr.java_conf.neko_daisuki.android.nexec.client.MessageWhat;
 
@@ -249,10 +248,6 @@ public class MainActivity extends Activity {
 
     private String getClassName(String name) {
         return String.format("%s.%s", PACKAGE, name);
-    }
-
-    private void showToast(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 }
 
