@@ -1,5 +1,8 @@
 package jp.gr.java_conf.neko_daisuki.android.nexec.client.demo;
 
+import java.io.UnsupportedEncodingException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -83,17 +86,36 @@ public class MainActivity extends Activity {
             public abstract void handle(Message msg);
         }
 
-        private class StdoutHandler extends MessageHandler {
+        private class OutputHandler extends MessageHandler {
 
-            public void handle(Message msg) {
-                showToast(String.format("STDOUT: 0x%02x", 0xff & msg.arg1));
+            private List<Byte> mOutput;
+            private EditText mEditText;
+
+            public OutputHandler(List<Byte> output, EditText editText) {
+                mOutput = output;
+                mEditText = editText;
             }
-        }
-
-        private class StderrHandler extends MessageHandler {
 
             public void handle(Message msg) {
-                showToast(String.format("STDERR: 0x%02x", 0xff & msg.arg1));
+                byte b = (byte)msg.arg1;
+                if ((b != '\r') && (b != '\n')) {
+                    mOutput.add(Byte.valueOf(b));
+                    return;
+                }
+                int size = mOutput.size();
+                byte[] bytes = new byte[size];
+                for (int i = 0; i < size; i++) {
+                    bytes[i] = mOutput.get(i).byteValue();
+                }
+                String s;
+                try {
+                    s = new String(bytes, "UTF-8");
+                }
+                catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    return;
+                }
+                mEditText.append(s);
             }
         }
 
@@ -107,16 +129,24 @@ public class MainActivity extends Activity {
             }
         }
 
+        private List<Byte> mStdout;
+        private List<Byte> mStderr;
+
         private UnbindProcedure mUnbindProcedure;
         private SparseArray<MessageHandler> mHandlers;
 
         public IncomingHandler() {
             super();
 
+            mStdout = new LinkedList<Byte>();
+            mStderr = new LinkedList<Byte>();
+
             mUnbindProcedure = new TrueUnbindProcedure();
             mHandlers = new SparseArray<MessageHandler>();
-            mHandlers.put(MessageWhat.STDOUT, new StdoutHandler());
-            mHandlers.put(MessageWhat.STDERR, new StderrHandler());
+            mHandlers.put(MessageWhat.STDOUT,
+                    new OutputHandler(mStdout, mStdoutEdit));
+            mHandlers.put(MessageWhat.STDERR,
+                    new OutputHandler(mStderr, mStderrEdit));
             mHandlers.put(MessageWhat.FINISHED, new FinishedHandler());
         }
 
@@ -134,7 +164,6 @@ public class MainActivity extends Activity {
 
         public void onServiceDisconnected(ComponentName className) {
             mService = null;
-            mPollingTask = new FakePollingTask();
         }
     }
 
@@ -153,16 +182,17 @@ public class MainActivity extends Activity {
     private static final String PACKAGE = "jp.gr.java_conf.neko_daisuki.android.nexec.client";
     private static final int REQUEST_CONFIRM = 0;
 
-    private Messenger mMessenger = new Messenger(new IncomingHandler());
+    private Messenger mMessenger;
     private Messenger mService;
     private Connection mConnection;
     private Timer mTimer;
-    private PollingTask mPollingTask = new FakePollingTask();
+    private PollingTask mPollingTask;
 
     private EditText mHostEdit;
     private EditText mPortEdit;
     private EditText mArgsEdit;
     private EditText mStdoutEdit;
+    private EditText mStderrEdit;
     private View mRunButton;
 
     @Override
@@ -177,8 +207,6 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mConnection = new Connection();
-
         mRunButton = findViewById(R.id.run_button);
         mRunButton.setOnClickListener(new RunButtonOnClickListener());
 
@@ -186,6 +214,10 @@ public class MainActivity extends Activity {
         mPortEdit = (EditText)findViewById(R.id.port_edit);
         mArgsEdit = (EditText)findViewById(R.id.args_edit);
         mStdoutEdit = (EditText)findViewById(R.id.stdout_edit);
+        mStderrEdit = (EditText)findViewById(R.id.stderr_edit);
+
+        mMessenger = new Messenger(new IncomingHandler());
+        mConnection = new Connection();
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -197,6 +229,7 @@ public class MainActivity extends Activity {
         copySessionId(intent, data);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         mRunButton.setEnabled(false);
+        mPollingTask = new FakePollingTask();
         startTimer();
     }
 
