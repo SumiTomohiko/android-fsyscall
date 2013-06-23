@@ -59,25 +59,25 @@ public class MainActivity extends Activity {
         }
     }
 
-    private interface UnbindProcedure {
+    private static class IncomingHandler extends Handler {
 
-        public void unbind();
-    }
+        private interface UnbindProcedure {
 
-    private class TrueUnbindProcedure implements UnbindProcedure {
-
-        public void unbind() {
-            unbindService(mConnection);
+            public void unbind();
         }
-    }
 
-    private class FakeUnbindProcedure implements UnbindProcedure {
+        private class TrueUnbindProcedure implements UnbindProcedure {
 
-        public void unbind() {
+            public void unbind() {
+                mActivity.unbindService(mActivity.mConnection);
+            }
         }
-    }
 
-    private class IncomingHandler extends Handler {
+        private class FakeUnbindProcedure implements UnbindProcedure {
+
+            public void unbind() {
+            }
+        }
 
         private abstract class MessageHandler {
 
@@ -122,29 +122,31 @@ public class MainActivity extends Activity {
             public void handle(Message msg) {
                 mUnbindProcedure.unbind();
                 mUnbindProcedure = new FakeUnbindProcedure();
-                mRunButton.setEnabled(true);
-                mTimer.cancel();
+                mActivity.mRunButton.setEnabled(true);
+                mActivity.mTimer.cancel();
             }
         }
 
+        private MainActivity mActivity;
         private List<Byte> mStdout;
         private List<Byte> mStderr;
 
         private UnbindProcedure mUnbindProcedure;
         private SparseArray<MessageHandler> mHandlers;
 
-        public IncomingHandler() {
+        public IncomingHandler(MainActivity activity) {
             super();
 
+            mActivity = activity;
             mStdout = new LinkedList<Byte>();
             mStderr = new LinkedList<Byte>();
 
             mUnbindProcedure = new TrueUnbindProcedure();
             mHandlers = new SparseArray<MessageHandler>();
             mHandlers.put(MessageWhat.STDOUT,
-                    new OutputHandler(mStdout, mStdoutEdit));
+                    new OutputHandler(mStdout, mActivity.mStdoutEdit));
             mHandlers.put(MessageWhat.STDERR,
-                    new OutputHandler(mStderr, mStderrEdit));
+                    new OutputHandler(mStderr, mActivity.mStderrEdit));
             mHandlers.put(MessageWhat.FINISHED, new FinishedHandler());
         }
 
@@ -214,7 +216,7 @@ public class MainActivity extends Activity {
         mStdoutEdit = (EditText)findViewById(R.id.stdout_edit);
         mStderrEdit = (EditText)findViewById(R.id.stderr_edit);
 
-        mMessenger = new Messenger(new IncomingHandler());
+        mMessenger = new Messenger(new IncomingHandler(this));
         mConnection = new Connection();
     }
 
