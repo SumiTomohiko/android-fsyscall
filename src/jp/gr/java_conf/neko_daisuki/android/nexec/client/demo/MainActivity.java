@@ -1,192 +1,51 @@
 package jp.gr.java_conf.neko_daisuki.android.nexec.client.demo;
 
-import java.io.UnsupportedEncodingException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
-import android.util.SparseArray;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
 
-import jp.gr.java_conf.neko_daisuki.android.nexec.client.MessageWhat;
+import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient.Settings;
+import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient;
 
 public class MainActivity extends Activity {
 
-    private class ProxyTask extends TimerTask {
+    private class OnFinishListener implements NexecClient.OnFinishListener {
 
-        public void run() {
-            mPollingTask.run();
+        public void onFinish() {
+            mRunButton.setEnabled(true);
         }
     }
 
-    private interface PollingTask {
+    private class OnGetLineListener implements NexecClient.OnGetLineListener {
 
-        public void run();
-    }
+        private EditText mEditText;
 
-    private class TruePollingTask implements PollingTask {
-
-        public void run() {
-            Message msg = Message.obtain(null, MessageWhat.TELL_STATUS);
-            msg.replyTo = mMessenger;
-            try {
-                mService.send(msg);
-            }
-            catch (RemoteException e) {
-                e.printStackTrace();
-                // TODO: Show toast?
-            }
-        }
-    }
-
-    private class FakePollingTask implements PollingTask {
-
-        public void run() {
-        }
-    }
-
-    private static class IncomingHandler extends Handler {
-
-        private interface UnbindProcedure {
-
-            public void unbind();
+        public OnGetLineListener(EditText editText) {
+            mEditText = editText;
         }
 
-        private class TrueUnbindProcedure implements UnbindProcedure {
-
-            public void unbind() {
-                mActivity.unbindService(mActivity.mConnection);
-            }
-        }
-
-        private class FakeUnbindProcedure implements UnbindProcedure {
-
-            public void unbind() {
-            }
-        }
-
-        private abstract class MessageHandler {
-
-            public abstract void handle(Message msg);
-        }
-
-        private class OutputHandler extends MessageHandler {
-
-            private List<Byte> mOutput;
-            private EditText mEditText;
-
-            public OutputHandler(List<Byte> output, EditText editText) {
-                mOutput = output;
-                mEditText = editText;
-            }
-
-            public void handle(Message msg) {
-                byte b = (byte)msg.arg1;
-                if ((b != '\r') && (b != '\n')) {
-                    mOutput.add(Byte.valueOf(b));
-                    return;
-                }
-                int size = mOutput.size();
-                byte[] bytes = new byte[size];
-                for (int i = 0; i < size; i++) {
-                    bytes[i] = mOutput.get(i).byteValue();
-                }
-                String s;
-                try {
-                    s = new String(bytes, "UTF-8");
-                }
-                catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                    return;
-                }
-                mEditText.append(s);
-            }
-        }
-
-        private class FinishedHandler extends MessageHandler {
-
-            public void handle(Message msg) {
-                mUnbindProcedure.unbind();
-                mUnbindProcedure = new FakeUnbindProcedure();
-                mActivity.mRunButton.setEnabled(true);
-                mActivity.mTimer.cancel();
-            }
-        }
-
-        private MainActivity mActivity;
-        private List<Byte> mStdout;
-        private List<Byte> mStderr;
-
-        private UnbindProcedure mUnbindProcedure;
-        private SparseArray<MessageHandler> mHandlers;
-
-        public IncomingHandler(MainActivity activity) {
-            super();
-
-            mActivity = activity;
-            mStdout = new LinkedList<Byte>();
-            mStderr = new LinkedList<Byte>();
-
-            mUnbindProcedure = new TrueUnbindProcedure();
-            mHandlers = new SparseArray<MessageHandler>();
-            mHandlers.put(MessageWhat.STDOUT,
-                    new OutputHandler(mStdout, mActivity.mStdoutEdit));
-            mHandlers.put(MessageWhat.STDERR,
-                    new OutputHandler(mStderr, mActivity.mStderrEdit));
-            mHandlers.put(MessageWhat.FINISHED, new FinishedHandler());
-        }
-
-        public void handleMessage(Message msg) {
-            mHandlers.get(msg.what).handle(msg);
-        }
-    }
-
-    private class Connection implements ServiceConnection {
-
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            mService = new Messenger(service);
-            mPollingTask = new TruePollingTask();
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            mService = null;
+        public void onGetLine(String s) {
+            mEditText.getText().append(s);
         }
     }
 
     private class RunButtonOnClickListener implements View.OnClickListener {
 
         public void onClick(View view) {
-            Intent intent = new Intent();
-            intent.setClassName(PACKAGE, getClassName("MainActivity"));
-            intent.putExtra("HOST", getEditText(mHostEdit));
-            intent.putExtra("PORT", Integer.parseInt(getEditText(mPortEdit)));
-            intent.putExtra("ARGS", getEditText(mArgsEdit).split("\\s"));
-            startActivityForResult(intent, REQUEST_CONFIRM);
+            Settings settings = new Settings();
+            settings.host = getEditText(mHostEdit);
+            settings.port = Integer.parseInt(getEditText(mPortEdit));
+            settings.args = getEditText(mArgsEdit).split("\\s");
+            mNexecClient.request(settings, REQUEST_CONFIRM);
         }
     }
 
-    private static final String PACKAGE = "jp.gr.java_conf.neko_daisuki.android.nexec.client";
     private static final int REQUEST_CONFIRM = 0;
 
-    private Messenger mMessenger;
-    private Messenger mService;
-    private Connection mConnection;
-    private Timer mTimer;
-    private PollingTask mPollingTask;
+    private NexecClient mNexecClient;
 
     private EditText mHostEdit;
     private EditText mPortEdit;
@@ -216,39 +75,24 @@ public class MainActivity extends Activity {
         mStdoutEdit = (EditText)findViewById(R.id.stdout_edit);
         mStderrEdit = (EditText)findViewById(R.id.stderr_edit);
 
-        mMessenger = new Messenger(new IncomingHandler(this));
-        mConnection = new Connection();
+        mNexecClient = new NexecClient(this);
+        mNexecClient.setStdoutOnGetLineListener(
+                new OnGetLineListener(mStdoutEdit));
+        mNexecClient.setStderrOnGetLineListener(
+                new OnGetLineListener(mStderrEdit));
+        mNexecClient.setOnFinishListener(new OnFinishListener());
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if ((requestCode != REQUEST_CONFIRM) || (resultCode != RESULT_OK)) {
             return;
         }
-        Intent intent = new Intent();
-        intent.setClassName(PACKAGE, getClassName("MainService"));
-        copySessionId(intent, data);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         mRunButton.setEnabled(false);
-        mPollingTask = new FakePollingTask();
-        startTimer();
-    }
-
-    private void startTimer() {
-        mTimer = new Timer();
-        mTimer.schedule(new ProxyTask(), 0, 10);
-    }
-
-    private void copySessionId(Intent dest, Intent src) {
-        String key = "SESSION_ID";
-        dest.putExtra(key, src.getStringExtra(key));
+        mNexecClient.execute(data);
     }
 
     private String getEditText(EditText view) {
         return view.getText().toString();
-    }
-
-    private String getClassName(String name) {
-        return String.format("%s.%s", PACKAGE, name);
     }
 }
 
