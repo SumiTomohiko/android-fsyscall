@@ -39,6 +39,7 @@ public class MainActivity extends Activity {
             settings.host = getEditText(mHostEdit);
             settings.port = Integer.parseInt(getEditText(mPortEdit));
             settings.args = getEditText(mArgsEdit).split("\\s");
+            settings.files = new String[0];
             mNexecClient.request(settings, REQUEST_CONFIRM);
         }
     }

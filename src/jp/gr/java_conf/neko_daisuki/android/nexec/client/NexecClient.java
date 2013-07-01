@@ -25,6 +25,7 @@ public class NexecClient {
         public String host;
         public int port;
         public String[] args;
+        public String[] files;
     }
 
     public interface OnGetLineListener {
@@ -241,6 +242,7 @@ public class NexecClient {
         intent.putExtra("HOST", settings.host);
         intent.putExtra("PORT", settings.port);
         intent.putExtra("ARGS", settings.args);
+        intent.putExtra("FILES", settings.files);
         mActivity.startActivityForResult(intent, requestCode);
     }
 
