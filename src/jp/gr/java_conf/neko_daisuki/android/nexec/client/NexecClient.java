@@ -22,10 +22,17 @@ public class NexecClient {
 
     public static class Settings {
 
+        public static class Link {
+
+            public String dest;
+            public String src;
+        }
+
         public String host;
         public int port;
         public String[] args;
         public String[] files;
+        public Link[] links;
     }
 
     public interface OnGetLineListener {
@@ -243,6 +250,7 @@ public class NexecClient {
         intent.putExtra("PORT", settings.port);
         intent.putExtra("ARGS", settings.args);
         intent.putExtra("FILES", settings.files);
+        intent.putExtra("LINKS", encodeLinks(settings.links));
         mActivity.startActivityForResult(intent, requestCode);
     }
 
@@ -267,6 +275,30 @@ public class NexecClient {
     private void copySessionId(Intent dest, Intent src) {
         String key = "SESSION_ID";
         dest.putExtra(key, src.getStringExtra(key));
+    }
+
+    private String[] encodeLinks(Settings.Link[] links) {
+        List<String> l = new LinkedList<String>();
+        for (Settings.Link link: links) {
+            l.add(encodeLink(link));
+        }
+        return l.toArray(new String[0]);
+    }
+
+    private String encodeLink(Settings.Link link) {
+        String dest = escapeLinkPath(link.dest);
+        String src = escapeLinkPath(link.src);
+        return String.format("%s:%s", dest, src);
+    }
+
+    private String escapeLinkPath(String path) {
+        StringBuilder buffer = new StringBuilder();
+        int len = path.length();
+        for (int i = 0; i < len; i++) {
+            char c = path.charAt(i);
+            buffer.append((c != ':') && (c != '\\') ? "" : "\\").append(c);
+        }
+        return buffer.toString();
     }
 }
 
