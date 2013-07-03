@@ -1,6 +1,7 @@
 package jp.gr.java_conf.neko_daisuki.android.nexec.client;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
@@ -22,17 +23,30 @@ public class NexecClient {
 
     public static class Settings {
 
-        public static class Link {
+        private static class Link {
 
-            public String dest;
-            public String src;
+            private String dest;
+            private String src;
+
+            public Link(String dest, String src) {
+                this.dest = dest;
+                this.src = src;
+            }
         }
 
         public String host;
         public int port;
         public String[] args;
         public String[] files;
-        public Link[] links;
+        private List<Link> links;
+
+        public Settings() {
+            links = new ArrayList<Link>();
+        }
+
+        public void addLink(String dest, String src) {
+            links.add(new Link(dest, src));
+        }
     }
 
     public interface OnGetLineListener {
@@ -277,7 +291,7 @@ public class NexecClient {
         dest.putExtra(key, src.getStringExtra(key));
     }
 
-    private String[] encodeLinks(Settings.Link[] links) {
+    private String[] encodeLinks(List<Settings.Link> links) {
         List<String> l = new LinkedList<String>();
         for (Settings.Link link: links) {
             l.add(encodeLink(link));
