@@ -27,7 +27,7 @@
             <EditText
                 android:id="@+id/args_edit"
                 android:typeface="monospace"
-                android:text="/bin/echo"/>
+                android:text="echo"/>
         </TableRow>
     </TableLayout>
     <TextView
