@@ -11,3 +11,8 @@ icon:
 
 clean:
 	@$(CMD) clean
+
+doc:
+	@cd doc && make
+
+.PHONY: doc
