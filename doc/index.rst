@@ -2,7 +2,7 @@
 nexec client demo for Android
 *****************************
 
-.. image:: ic_launcher-web.png
+.. image:: icon.png
 
 .. contents:: Table of contents
 
