@@ -9,10 +9,17 @@ nexec client demo for Android
 Overview
 ========
 
-This is an Android application to try `nexec client for Android`_.
+This is a sample Android application to try `nexec client for Android`_.
 
 .. _nexec client for Android:
     http://neko-daisuki.ddo.jp/~SumiTomohiko/android-nexec-client/index.html
+
+Google play
+===========
+
+This application is available at `Google play`_.
+
+.. _Google play: https://play.google.com/store/apps/details?id=jp.gr.java_conf.neko_daisuki.android.nexec.client.demo
 
 How to use
 ==========
