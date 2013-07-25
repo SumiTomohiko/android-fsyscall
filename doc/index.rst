@@ -24,7 +24,8 @@ This application is available at `Google play`_.
 How to use
 ==========
 
-.. image:: screenshot.png
+.. image:: screenshot-thumb.png
+    :target: screenshot.png
 
 You must give this screen with the following three settings.
 
@@ -35,13 +36,15 @@ You must give this screen with the following three settings.
 When you finished, please push "Run". Then, android-nexec-client will show the
 requests of this demo application.
 
-.. image:: android-nexec-client.png
+.. image:: android-nexec-client-thumb.png
+    :target: android-nexec-client.png
 
 If you push "Okey" to accept the requests, the demo application will connect
 with the server to run the command. If the command outputs stdout/stderr, you
 will see these in the textboxes.
 
-.. image:: stdout.png
+.. image:: stdout-thumb.png
+    :target: stdout.png
 
 Anything else
 =============

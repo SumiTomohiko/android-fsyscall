@@ -1,6 +1,9 @@
 .settings
 bin
+doc/android-nexec-client-thumb.png
 doc/index.html
+doc/screenshot-thumb.png
+doc/stdout-thumb.png
 gen
 ic_launcher-web.png
 jp.gr.java_conf.neko_daisuki.android.nexec.client
