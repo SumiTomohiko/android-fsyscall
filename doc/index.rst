@@ -21,23 +21,45 @@ This application is available at `Google play`_.
 
 .. _Google play: https://play.google.com/store/apps/details?id=jp.gr.java_conf.neko_daisuki.android.nexec.client.demo
 
-How to use
-==========
+Tutorial
+========
 
-.. image:: screenshot-thumb.png
-    :target: screenshot.png
-
-You must give this screen with the following three settings.
+You must give the main screen with the following three settings.
 
 * Name of the server
 * Port number of the server
 * Command with arguments
 
-When you finished, please push "Run". Then, android-nexec-client will show the
-requests of this demo application.
+.. image:: screenshot-thumb.png
+    :target: screenshot.png
+
+neko-daisuki.ddo.jp is ready to try nexec_. You can use this as a server.
+
+.. _nexec: http://neko-daisuki.ddo.jp/~SumiTomohiko/nexec/index.html
+
+There are no special reasons to change the port number from the default value
+(57005).
+
+The following commands are available now.
+
+* echo
+* ffmpeg
+
+But this application has any functions to allow file access yet. So the command
+of ffmpeg is almost meaningless. Please give "echo" and its arguments as you
+like. Do not specify a path of a command such as "/bin/echo". An nexec_ server
+denies any undefined commands. For more information, refer
+`nexec documentation`_.
+
+.. _nexec documentation: http://neko-daisuki.ddo.jp/~SumiTomohiko/nexec/index.html#edit-etc-nexecd-conf
+
+When you finished, please push "Run". Then, `android-nexec-client`_ will show
+the requests of this demo application.
 
 .. image:: android-nexec-client-thumb.png
     :target: android-nexec-client.png
+
+.. _android-nexec-client: http://neko-daisuki.ddo.jp/~SumiTomohiko/android-nexec-client/index.html#confirmation-pages
 
 If you push "Okey" to accept the requests, the demo application will connect
 with the server to run the command. If the command outputs stdout/stderr, you
