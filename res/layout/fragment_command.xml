@@ -2,6 +2,7 @@
 <EditText
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/args_edit"
+    android:gravity="left|top"
     android:typeface="monospace"/>
 <!--
 vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
