@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:stretchColumns="1">
+    <TableRow>
+        <TextView android:text="Host"/>
+        <EditText
+            android:id="@+id/host_edit"
+            android:typeface="monospace"
+            android:text="neko-daisuki.ddo.jp"/>
+    </TableRow>
+    <TableRow>
+        <TextView android:text="Port"/>
+        <EditText
+            android:id="@+id/port_edit"
+            android:typeface="monospace"
+            android:text="57005"/>
+    </TableRow>
+</TableLayout>
+<!--
+vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
+-->
