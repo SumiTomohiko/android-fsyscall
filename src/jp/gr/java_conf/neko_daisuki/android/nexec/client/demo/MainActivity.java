@@ -19,49 +19,63 @@ import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient;
 
 public class MainActivity extends FragmentActivity {
 
-    public class HostFragment extends Fragment {
+    public static class HostFragment extends BaseFragment {
 
         public View onCreateView(LayoutInflater inflater,
                                  ViewGroup container,
                                  Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_host, null);
-            mHostEdit = (EditText)view.findViewById(R.id.host_edit);
-            mPortEdit = (EditText)view.findViewById(R.id.port_edit);
+            MainActivity activity = getMainActivity();
+            activity.mHostEdit = getEditText(view, R.id.host_edit);
+            activity.mPortEdit = getEditText(view, R.id.port_edit);
             return view;
         }
     }
 
-    public class CommandFragment extends Fragment {
+    public static class CommandFragment extends BaseFragment {
 
         public View onCreateView(LayoutInflater inflater,
                                  ViewGroup container,
                                  Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_command, null);
-            mArgsEdit = (EditText)view.findViewById(R.id.args_edit);
+            MainActivity activity = getMainActivity();
+            activity.mArgsEdit = getEditText(view, R.id.args_edit);
             return view;
         }
     }
 
-    public class RunFragment extends Fragment {
-
-        private class RunButtonOnClickListener implements View.OnClickListener {
-
-            public void onClick(View view) {
-                Settings settings = new Settings();
-                settings.host = getEditText(mHostEdit);
-                settings.port = Integer.parseInt(getEditText(mPortEdit));
-                settings.args = getEditText(mArgsEdit).split("\\s");
-                settings.files = new String[0];
-                mNexecClient.request(settings, REQUEST_CONFIRM);
-            }
-        }
+    public static class RunFragment extends BaseFragment {
 
         public View onCreateView(LayoutInflater inflater,
                                  ViewGroup container,
                                  Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_run, null);
-            mRunButton = view.findViewById(R.id.run_button);
+            MainActivity activity = getMainActivity();
+            activity.mRunButton = view.findViewById(R.id.run_button);
             return view;
+        }
+    }
+
+    private class RunButtonOnClickListener implements View.OnClickListener {
+
+        public void onClick(View view) {
+            Settings settings = new Settings();
+            settings.host = getEditText(mHostEdit);
+            settings.port = Integer.parseInt(getEditText(mPortEdit));
+            settings.args = getEditText(mArgsEdit).split("\\s");
+            settings.files = new String[0];
+            mNexecClient.request(settings, REQUEST_CONFIRM);
+        }
+    }
+
+    private abstract static class BaseFragment extends Fragment {
+
+        public EditText getEditText(View view, int id) {
+            return (EditText)view.findViewById(id);
+        }
+
+        public MainActivity getMainActivity() {
+            return (MainActivity)getActivity();
         }
     }
 
