@@ -91,49 +91,29 @@ public class MainActivity extends FragmentActivity {
 
     private class Adapter extends FragmentPagerAdapter {
 
-        private abstract class Page {
+        private class Page {
 
-            public abstract String getTitle();
-            public abstract Fragment getItem();
-        }
+            private String mTitle;
+            private Fragment mFragment;
 
-        private class HostPage extends Page {
+            public Page(String title, Fragment fragment) {
+                mTitle = title;
+                mFragment = fragment;
+            }
 
             public String getTitle() {
-                return "Host";
+                return mTitle;
             }
 
-            public Fragment getItem() {
-                return new HostFragment();
-            }
-        }
-
-        private class CommandPage extends Page {
-
-            public String getTitle() {
-                return "Command";
-            }
-
-            public Fragment getItem() {
-                return new CommandFragment();
-            }
-        }
-
-        private class RunPage extends Page {
-
-            public String getTitle() {
-                return "Run";
-            }
-
-            public Fragment getItem() {
-                return new RunFragment();
+            public Fragment getFragment() {
+                return mFragment;
             }
         }
 
         private Page[] mPages = new Page[] {
-            new HostPage(),
-            new CommandPage(),
-            new RunPage()
+            new Page("Host", new HostFragment()),
+            new Page("Command", new CommandFragment()),
+            new Page("Run", new RunFragment())
         };
 
         public Adapter(FragmentManager fm) {
@@ -142,7 +122,7 @@ public class MainActivity extends FragmentActivity {
 
         @Override
         public Fragment getItem(int i) {
-            return mPages[i].getItem();
+            return mPages[i].getFragment();
         }
 
         @Override
