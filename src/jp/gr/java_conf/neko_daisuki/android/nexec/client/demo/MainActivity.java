@@ -1,5 +1,9 @@
 package jp.gr.java_conf.neko_daisuki.android.nexec.client.demo;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -12,7 +16,11 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient.Settings;
 import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient;
@@ -40,6 +48,75 @@ public class MainActivity extends FragmentActivity {
             View view = inflater.inflate(R.layout.fragment_command, null);
             MainActivity activity = getMainActivity();
             activity.mArgsEdit = getEditText(view, R.id.args_edit);
+            return view;
+        }
+    }
+
+    public static class PermissionFragment extends BaseFragment {
+
+        private class Adapter extends ArrayAdapter<Permission> {
+
+            private LayoutInflater mInflater;
+
+            public Adapter(MainActivity activity) {
+                super(activity, 0, activity.mPermissions);
+                String name = Context.LAYOUT_INFLATER_SERVICE;
+                mInflater = (LayoutInflater)activity.getSystemService(name);
+            }
+
+            public View getView(int position,
+                                View convertView,
+                                ViewGroup parent) {
+                int layoutId = R.layout.row_permission;
+                View view = mInflater.inflate(layoutId, parent, false);
+                int textId = R.id.pattern_text;
+                TextView patternText = (TextView)view.findViewById(textId);
+                List<Permission> perm = getMainActivity().mPermissions;
+                patternText.setText(perm.get(position).getPattern());
+                return view;
+            }
+        }
+
+        private class AddButtonOnClickListener implements View.OnClickListener {
+
+            private EditText mPatternEdit;
+            private BaseAdapter mAdapter;
+
+            public AddButtonOnClickListener(EditText patternEdit,
+                                            BaseAdapter adapter) {
+                mPatternEdit = patternEdit;
+                mAdapter = adapter;
+            }
+
+            public void onClick(View view) {
+                MainActivity activity = getMainActivity();
+                String pattern = activity.getEditText(mPatternEdit);
+                if (pattern.equals("")) {
+                    return;
+                }
+
+                activity.mPermissions.add(new Permission(pattern));
+                mAdapter.notifyDataSetChanged();
+            }
+        }
+
+        public View onCreateView(LayoutInflater inflater,
+                                 ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View view = inflater.inflate(R.layout.fragment_permission, null);
+            MainActivity activity = getMainActivity();
+            int listId = R.id.permission_list;
+            ListView listView = (ListView)view.findViewById(listId);
+            BaseAdapter adapter = new Adapter(activity);
+            listView.setAdapter(adapter);
+
+            View addButton = view.findViewById(R.id.add_button);
+            int patternId = R.id.pattern_edit;
+            EditText patternEdit = (EditText)view.findViewById(patternId);
+            View.OnClickListener listener = new AddButtonOnClickListener(
+                    patternEdit, adapter);
+            addButton.setOnClickListener(listener);
+
             return view;
         }
     }
@@ -113,6 +190,7 @@ public class MainActivity extends FragmentActivity {
         private Page[] mPages = new Page[] {
             new Page("Host", new HostFragment()),
             new Page("Command", new CommandFragment()),
+            new Page("Permission", new PermissionFragment()),
             new Page("Run", new RunFragment())
         };
 
@@ -156,9 +234,23 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    private static class Permission {
+
+        private String mPattern;
+
+        public Permission(String pattern) {
+            mPattern = pattern;
+        }
+
+        public String getPattern() {
+            return mPattern;
+        }
+    }
+
     private static final int REQUEST_CONFIRM = 0;
 
     private NexecClient mNexecClient;
+    private List<Permission> mPermissions;
 
     private EditText mHostEdit;
     private EditText mPortEdit;
@@ -176,6 +268,8 @@ public class MainActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mPermissions = new ArrayList<Permission>();
 
         mNexecClient = new NexecClient(this);
         mNexecClient.setOnFinishListener(new OnFinishListener());
