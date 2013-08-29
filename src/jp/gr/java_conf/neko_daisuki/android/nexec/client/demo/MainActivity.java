@@ -46,25 +46,35 @@ public class MainActivity extends FragmentActivity {
 
     public static class RunFragment extends BaseFragment {
 
+        private static class RunButtonOnClickListener implements View.OnClickListener {
+
+            private MainActivity mActivity;
+
+            public RunButtonOnClickListener(MainActivity activity) {
+                mActivity = activity;
+            }
+
+            public void onClick(View view) {
+                Settings settings = new Settings();
+                settings.host = mActivity.getEditText(mActivity.mHostEdit);
+                String port = mActivity.getEditText(mActivity.mPortEdit);
+                settings.port = Integer.parseInt(port);
+                String args = mActivity.getEditText(mActivity.mArgsEdit);
+                settings.args = args.split("\\s");
+                settings.files = new String[0];
+                mActivity.mNexecClient.request(settings, REQUEST_CONFIRM);
+            }
+        }
+
         public View onCreateView(LayoutInflater inflater,
                                  ViewGroup container,
                                  Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_run, null);
             MainActivity activity = getMainActivity();
-            activity.mRunButton = view.findViewById(R.id.run_button);
+            View button = view.findViewById(R.id.run_button);
+            activity.mRunButton = button;
+            button.setOnClickListener(new RunButtonOnClickListener(activity));
             return view;
-        }
-    }
-
-    private class RunButtonOnClickListener implements View.OnClickListener {
-
-        public void onClick(View view) {
-            Settings settings = new Settings();
-            settings.host = getEditText(mHostEdit);
-            settings.port = Integer.parseInt(getEditText(mPortEdit));
-            settings.args = getEditText(mArgsEdit).split("\\s");
-            settings.files = new String[0];
-            mNexecClient.request(settings, REQUEST_CONFIRM);
         }
     }
 
