@@ -123,23 +123,27 @@ public class MainActivity extends FragmentActivity {
 
     public static class RunFragment extends BaseFragment {
 
-        private static class RunButtonOnClickListener implements View.OnClickListener {
-
-            private MainActivity mActivity;
-
-            public RunButtonOnClickListener(MainActivity activity) {
-                mActivity = activity;
-            }
+        private class RunButtonOnClickListener implements View.OnClickListener {
 
             public void onClick(View view) {
                 Settings settings = new Settings();
-                settings.host = mActivity.getEditText(mActivity.mHostEdit);
-                String port = mActivity.getEditText(mActivity.mPortEdit);
+                MainActivity activity = getMainActivity();
+                settings.host = activity.getEditText(activity.mHostEdit);
+                String port = activity.getEditText(activity.mPortEdit);
                 settings.port = Integer.parseInt(port);
-                String args = mActivity.getEditText(mActivity.mArgsEdit);
+                String args = activity.getEditText(activity.mArgsEdit);
                 settings.args = args.split("\\s");
-                settings.files = new String[0];
-                mActivity.mNexecClient.request(settings, REQUEST_CONFIRM);
+                settings.files = listPatterns(activity.mPermissions);
+                activity.mNexecClient.request(settings, REQUEST_CONFIRM);
+            }
+
+            private String[] listPatterns(List<Permission> permissions) {
+                int size = permissions.size();
+                String[] a = new String[size];
+                for (int i = 0; i < size; i++) {
+                    a[i] = permissions.get(i).getPattern();
+                }
+                return a;
             }
         }
 
@@ -150,7 +154,7 @@ public class MainActivity extends FragmentActivity {
             MainActivity activity = getMainActivity();
             View button = view.findViewById(R.id.run_button);
             activity.mRunButton = button;
-            button.setOnClickListener(new RunButtonOnClickListener(activity));
+            button.setOnClickListener(new RunButtonOnClickListener());
             return view;
         }
     }
