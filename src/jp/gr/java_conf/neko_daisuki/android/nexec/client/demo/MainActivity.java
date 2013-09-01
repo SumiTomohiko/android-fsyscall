@@ -281,6 +281,10 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    private enum Key {
+        Permissions
+    }
+
     private static final int REQUEST_CONFIRM = 0;
 
     private NexecClient mNexecClient;
@@ -310,6 +314,22 @@ public class MainActivity extends FragmentActivity {
 
         ViewPager pager = (ViewPager)findViewById(R.id.pager);
         pager.setAdapter(new Adapter(getSupportFragmentManager()));
+    }
+
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        String[] sa = savedInstanceState.getStringArray(Key.Permissions.name());
+        for (String pattern: sa) {
+            mPermissions.add(new Permission(pattern));
+        }
+    }
+
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        String key = Key.Permissions.name();
+        outState.putStringArray(key, mPermissions.listPatterns());
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
