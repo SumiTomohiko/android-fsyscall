@@ -59,7 +59,7 @@ public class MainActivity extends FragmentActivity {
             private LayoutInflater mInflater;
 
             public Adapter(MainActivity activity) {
-                super(activity, 0, activity.mPermissions);
+                super(activity, 0, activity.mPermissions.toList());
                 String name = Context.LAYOUT_INFLATER_SERVICE;
                 mInflater = (LayoutInflater)activity.getSystemService(name);
             }
@@ -71,8 +71,8 @@ public class MainActivity extends FragmentActivity {
                 View view = mInflater.inflate(layoutId, parent, false);
                 int textId = R.id.pattern_text;
                 TextView patternText = (TextView)view.findViewById(textId);
-                List<Permission> perm = getMainActivity().mPermissions;
-                patternText.setText(perm.get(position).getPattern());
+                Permissions perms = getMainActivity().mPermissions;
+                patternText.setText(perms.get(position).getPattern());
                 return view;
             }
         }
@@ -147,17 +147,8 @@ public class MainActivity extends FragmentActivity {
                 settings.port = Integer.parseInt(port);
                 String args = activity.getEditText(activity.mArgsEdit);
                 settings.args = args.split("\\s");
-                settings.files = listPatterns(activity.mPermissions);
+                settings.files = activity.mPermissions.listPatterns();
                 activity.mNexecClient.request(settings, REQUEST_CONFIRM);
-            }
-
-            private String[] listPatterns(List<Permission> permissions) {
-                int size = permissions.size();
-                String[] a = new String[size];
-                for (int i = 0; i < size; i++) {
-                    a[i] = permissions.get(i).getPattern();
-                }
-                return a;
             }
         }
 
@@ -260,10 +251,40 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    private static class Permissions {
+
+        private List<Permission> mList;
+
+        public Permissions() {
+            mList = new ArrayList<Permission>();
+        }
+
+        public void add(Permission perm) {
+            mList.add(perm);
+        }
+
+        public Permission get(int position) {
+            return mList.get(position);
+        }
+
+        public List<Permission> toList() {
+            return mList;
+        }
+
+        public String[] listPatterns() {
+            int size = mList.size();
+            String[] a = new String[size];
+            for (int i = 0; i < size; i++) {
+                a[i] = mList.get(i).getPattern();
+            }
+            return a;
+        }
+    }
+
     private static final int REQUEST_CONFIRM = 0;
 
     private NexecClient mNexecClient;
-    private List<Permission> mPermissions;
+    private Permissions mPermissions;
 
     private EditText mHostEdit;
     private EditText mPortEdit;
@@ -282,7 +303,7 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mPermissions = new ArrayList<Permission>();
+        mPermissions = new Permissions();
 
         mNexecClient = new NexecClient(this);
         mNexecClient.setOnFinishListener(new OnFinishListener());
