@@ -123,6 +123,20 @@ public class MainActivity extends FragmentActivity {
 
     public static class RunFragment extends BaseFragment {
 
+        private static class OnGetLineListener
+                implements NexecClient.OnGetLineListener {
+
+            private EditText mEditText;
+
+            public OnGetLineListener(EditText editText) {
+                mEditText = editText;
+            }
+
+            public void onGetLine(String s) {
+                mEditText.getText().append(s);
+            }
+        }
+
         private class RunButtonOnClickListener implements View.OnClickListener {
 
             public void onClick(View view) {
@@ -152,6 +166,14 @@ public class MainActivity extends FragmentActivity {
                                  Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_run, null);
             MainActivity activity = getMainActivity();
+
+            EditText stdoutEdit = (EditText)view.findViewById(R.id.stdout_edit);
+            OnGetLineListener outListener = new OnGetLineListener(stdoutEdit);
+            activity.mNexecClient.setStdoutOnGetLineListener(outListener);
+            EditText stderrEdit = (EditText)view.findViewById(R.id.stderr_edit);
+            OnGetLineListener errListener = new OnGetLineListener(stderrEdit);
+            activity.mNexecClient.setStderrOnGetLineListener(errListener);
+
             View button = view.findViewById(R.id.run_button);
             activity.mRunButton = button;
             button.setOnClickListener(new RunButtonOnClickListener());
@@ -222,19 +244,6 @@ public class MainActivity extends FragmentActivity {
 
         public void onFinish() {
             mRunButton.setEnabled(true);
-        }
-    }
-
-    private class OnGetLineListener implements NexecClient.OnGetLineListener {
-
-        private EditText mEditText;
-
-        public OnGetLineListener(EditText editText) {
-            mEditText = editText;
-        }
-
-        public void onGetLine(String s) {
-            mEditText.getText().append(s);
         }
     }
 
