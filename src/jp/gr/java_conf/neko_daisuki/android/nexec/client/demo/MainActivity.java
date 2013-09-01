@@ -158,11 +158,14 @@ public class MainActivity extends FragmentActivity {
             View view = inflater.inflate(R.layout.fragment_run, null);
             MainActivity activity = getMainActivity();
 
-            EditText stdoutEdit = (EditText)view.findViewById(R.id.stdout_edit);
+            EditText stdoutEdit = getEditText(view, R.id.stdout_edit);
             OnGetLineListener outListener = new OnGetLineListener(stdoutEdit);
+            activity.mStdoutEdit = stdoutEdit;
             activity.mNexecClient.setStdoutOnGetLineListener(outListener);
-            EditText stderrEdit = (EditText)view.findViewById(R.id.stderr_edit);
+
+            EditText stderrEdit = getEditText(view, R.id.stderr_edit);
             OnGetLineListener errListener = new OnGetLineListener(stderrEdit);
+            activity.mStderrEdit = stderrEdit;
             activity.mNexecClient.setStderrOnGetLineListener(errListener);
 
             View button = view.findViewById(R.id.run_button);
@@ -174,12 +177,12 @@ public class MainActivity extends FragmentActivity {
 
     private abstract static class BaseFragment extends Fragment {
 
-        public EditText getEditText(View view, int id) {
-            return (EditText)view.findViewById(id);
-        }
-
         public MainActivity getMainActivity() {
             return (MainActivity)getActivity();
+        }
+
+        protected EditText getEditText(View view, int id) {
+            return (EditText)view.findViewById(id);
         }
     }
 
@@ -293,6 +296,8 @@ public class MainActivity extends FragmentActivity {
     private EditText mHostEdit;
     private EditText mPortEdit;
     private EditText mArgsEdit;
+    private EditText mStdoutEdit;
+    private EditText mStderrEdit;
     private View mRunButton;
 
     @Override
@@ -336,8 +341,14 @@ public class MainActivity extends FragmentActivity {
         if ((requestCode != REQUEST_CONFIRM) || (resultCode != RESULT_OK)) {
             return;
         }
+        clearEditText(mStdoutEdit);
+        clearEditText(mStderrEdit);
         mRunButton.setEnabled(false);
         mNexecClient.execute(data);
+    }
+
+    private void clearEditText(EditText editText) {
+        editText.getEditableText().clear();
     }
 
     private String getEditText(EditText view) {
