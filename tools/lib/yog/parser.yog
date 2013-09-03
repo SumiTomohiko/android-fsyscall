@@ -1,0 +1,45 @@
+
+from datatypes import JSON_INT, JSON_STRING, JsonArray, JsonDatatype, JsonObject
+
+def parse_datatype(datatypes, s)
+  if (m = /\Aarray\s+of\s+(?<datatype>\w+)\Z/.match(s)) != nil
+    name = m.group("datatype")
+    return JsonArray.new(name, datatypes[name])
+  end
+  return datatypes[s]
+end
+
+def parse_member(datatypes, line)
+  a = line.split(":").map(&get_attr('trim) + apply())
+  return a[0], parse_datatype(datatypes, a[1])
+end
+
+def parse_struct(name, datatypes, fp)
+  object = JsonObject.new(name)
+  while (line = fp.readline().trim()) != "end"
+    name, datatype = parse_member(datatypes, line)
+    object.members[name] = datatype
+  end
+  return object
+end
+
+def parse_datatypes(src)
+  datatypes = {
+    "int": JSON_INT,
+    "string": JSON_STRING
+  }
+
+  File.open(src) do |fp|
+    while (line = fp.readline()) != nil
+      s = line.trim()
+      if (m = /\Astruct\s+(?<name>\w+)\Z/.match(s)) != nil
+        name = m.group("name")
+        datatypes[name] = parse_struct(name, datatypes, fp)
+      end
+    end
+  end
+
+  return datatypes
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

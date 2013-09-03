@@ -1,0 +1,172 @@
+
+from datatypes import JsonArray, JsonObject, JsonPrimitive
+
+INDENT = 4 * " "
+
+def to_camel(s, first)
+  a = []
+  flag = first
+  s.each() do |c|
+    if c == "_"
+      flag = true
+      next
+    end
+    if !flag
+      a << c
+      next
+    end
+    pos = "abcdefghijklmnopqrstuvwxyz".find(c)
+    a << (pos == -1 ? c : "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[pos])
+    flag = false
+  end
+  return a.join("")
+end
+
+def to_lower_camel(s)
+  return to_camel(s, false)
+end
+
+def to_upper_camel(s)
+  return to_camel(s, true)
+end
+
+def to_upper_camel_single(s)
+  t = to_upper_camel(s)
+  return t[-1] == "s" ? t.slice(0, t.size - 1) : t
+end
+
+def build_prototypes(datatype)
+  a = []
+  datatype.members.each() do |name, datatype|
+    if datatype.kind_of?(JsonPrimitive)
+      fmt = "public void onRead{0}({1} value);"
+      a << fmt.format(to_upper_camel(name), datatype.java_type)
+      next
+    end
+    a << "public void onBegin{0}();".format(to_upper_camel_single(name))
+    a << "public void onEnd{0}();".format(to_upper_camel_single(name))
+  end
+  return a
+end
+
+def build_handler(name, struct)
+  methods = build_prototypes(struct).join("\n" + 2 * INDENT)
+  return <<EOF.format(to_upper_camel(name), methods)
+    public interface {0}Handler {{
+
+        {1}
+    }}
+EOF
+end
+
+def build_handlers(datatypes)
+  handlers = []
+  datatypes.each() do |name, datatype|
+    if datatype.kind_of?(JsonObject)
+      handlers << build_handler(name, datatype)
+    end
+  end
+  return handlers.map(&get_attr('trim) + apply()).join("\n\n" + INDENT)
+end
+
+def build_handlers_members(datatypes)
+  a = []
+  datatypes.each() do |name, datatype|
+    if datatype.kind_of?(JsonPrimitive)
+      next
+    end
+    fmt = "public {0}Handler {1}Handler;"
+    a << fmt.format(to_upper_camel(name), to_lower_camel(name))
+  end
+  return a.join("\n" + 2 * INDENT)
+end
+
+def build_methods(datatypes)
+  a = []
+  datatypes.each() do |name, datatype|
+    if !datatype.kind_of?(JsonObject)
+      next
+    end
+
+    members = []
+    datatype.members.each() do |member, datatype|
+      if datatype.kind_of?(JsonPrimitive)
+        members << <<EOF.format(member, to_lower_camel(name), to_upper_camel(member), to_upper_camel(datatype.java_type))
+            if (name.equals("{0}")) {{
+                mHandlers.{1}Handler.onRead{2}(reader.next{3}());
+                continue;
+            }}
+EOF
+        next
+      end
+      if datatype.kind_of?(JsonArray)
+        members << <<EOF.format(member, to_lower_camel(name), to_upper_camel_single(member), to_upper_camel(datatype.datatype.name))
+            if (name.equals("{0}")) {{
+                reader.beginArray();
+                while (reader.hasNext()) {{
+                    mHandlers.{1}Handler.onBegin{2}();
+                    read{3}(reader);
+                    mHandlers.{1}Handler.onEnd{2}();
+                }}
+                reader.endArray();
+            }}
+EOF
+        next
+      end
+    end
+
+    a << <<EOF.format(to_upper_camel(name), members.map(&call_method('trim)).join("\n" + 3 * INDENT))
+    private void read{0}(JsonReader reader) throws IOException {{
+        reader.beginObject();
+        while (reader.hasNext()) {{
+            String name = reader.nextName();
+            {1}
+        }}
+        reader.endObject();
+    }}
+EOF
+  end
+  return a.map(&call_method('trim)).join("\n\n" + INDENT)
+end
+
+def generate_reader(datatypes, dest, package)
+  File.open(dest, "w") do |fp|
+    handlers = build_handlers(datatypes)
+    members = build_handlers_members(datatypes)
+    methods = build_methods(datatypes)
+    fp.write(<<EOF.format(package, handlers, members, methods))
+package {0};
+
+import java.io.IOException;
+import java.io.Reader;
+
+import android.util.JsonReader;
+
+public class PresetReader {{
+
+    {1}
+
+    public static class Handlers {{
+
+        {2}
+    }}
+
+    private Handlers mHandlers;
+
+    public PresetReader(Handlers handlers) {{
+        mHandlers = handlers;
+    }}
+
+    public void read(Reader in) throws IOException {{
+        readMain(new JsonReader(in));
+    }}
+
+    {3}
+}}
+
+// vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
+EOF
+  end
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

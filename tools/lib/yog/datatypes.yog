@@ -1,0 +1,36 @@
+
+class JsonDatatype
+
+  def init(name)
+    self.name = name
+  end
+end
+
+class JsonPrimitive > JsonDatatype
+
+  def init(name, java_type)
+    super(name)
+    self.java_type = java_type
+  end
+end
+
+JSON_INT = JsonPrimitive.new("int", "int")
+JSON_STRING = JsonPrimitive.new("string", "String")
+
+class JsonArray > JsonDatatype
+
+  def init(name, datatype)
+    super(name)
+    self.datatype = datatype
+  end
+end
+
+class JsonObject > JsonDatatype
+
+  def init(name)
+    super(name)
+    self.members = {}
+  end
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

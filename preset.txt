@@ -1,0 +1,26 @@
+
+struct pair
+    name: string
+    value: string
+end
+
+struct link
+    source: string
+    destination: string
+end
+
+struct permission
+    pattern: string
+end
+
+struct main
+    host: string
+    port: int
+    command: string
+    permissions: array of permission
+    current_directory: string
+    environments: array of pair
+    links: array of link
+end
+
+# vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
