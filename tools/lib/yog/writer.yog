@@ -72,6 +72,8 @@ def generate_writer(g, dest)
     fp.write(<<EOF.format(g.package, classes, methods))
 package {0};
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -82,8 +84,13 @@ public class PresetWriter {{
 
     {1}
 
+    public static void write(String path, Main main) throws IOException {{
+        write(new BufferedWriter(new FileWriter(path)), main);
+    }}
+
     public static void write(Writer out, Main main) throws IOException {{
         JsonWriter writer = new JsonWriter(out);
+        writer.setIndent("    ");
         write(writer, main);
         writer.close();
     }}
