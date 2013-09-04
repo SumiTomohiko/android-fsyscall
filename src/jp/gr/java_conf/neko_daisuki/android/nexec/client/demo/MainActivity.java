@@ -1,11 +1,14 @@
 package jp.gr.java_conf.neko_daisuki.android.nexec.client.demo;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -21,6 +24,7 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient.Settings;
 import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient;
@@ -289,6 +293,7 @@ public class MainActivity extends FragmentActivity {
     }
 
     private static final int REQUEST_CONFIRM = 0;
+    private static final String DEFAULT_PRESET_NAME = "default";
 
     private NexecClient mNexecClient;
     private Permissions mPermissions;
@@ -319,6 +324,8 @@ public class MainActivity extends FragmentActivity {
 
         ViewPager pager = (ViewPager)findViewById(R.id.pager);
         pager.setAdapter(new Adapter(getSupportFragmentManager()));
+
+        makeApplicationDirectory();
     }
 
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
@@ -347,12 +354,55 @@ public class MainActivity extends FragmentActivity {
         mNexecClient.execute(data);
     }
 
+    protected void onPause() {
+        super.onPause();
+        writePreset(DEFAULT_PRESET_NAME);
+    }
+
     private void clearEditText(EditText editText) {
         editText.getEditableText().clear();
     }
 
     private String getEditText(EditText view) {
         return view.getText().toString();
+    }
+
+    private String getApplicationDirectory() {
+        String dir = Environment.getExternalStorageDirectory().getPath();
+        return String.format("%s/.nexec-demo", dir);
+    }
+
+    private void makeApplicationDirectory() {
+        new File(getApplicationDirectory()).mkdir();
+    }
+
+    private String getPresetPath(String presetName) {
+        return String.format("%s/%s", getApplicationDirectory(), presetName);
+    }
+
+    private void writePreset(String presetName) {
+        PresetWriter.Main main = new PresetWriter.Main();
+        main.currentDirectory = "/";
+        main.command = getEditText(mArgsEdit);
+        main.links = new ArrayList<PresetWriter.Link>();
+        main.permissions = new ArrayList<PresetWriter.Permission>();
+        for (Permission perm: mPermissions.toList()) {
+            PresetWriter.Permission p = new PresetWriter.Permission();
+            p.pattern = perm.getPattern();
+            main.permissions.add(p);
+        }
+        main.environments = new ArrayList<PresetWriter.Pair>();
+        main.host = getEditText(mHostEdit);
+        main.port = Integer.parseInt(getEditText(mPortEdit));
+
+        try {
+            PresetWriter.write(getPresetPath(presetName), main);
+        }
+        catch (IOException e) {
+            String fmt = "nexec demo: failed to write preset %s: %s";
+            String msg = String.format(fmt, presetName, e.getMessage());
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+        }
     }
 }
 
