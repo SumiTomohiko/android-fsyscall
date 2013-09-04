@@ -96,6 +96,8 @@ def generate_reader(g, dest)
     fp.write(<<EOF.format(g.package, handlers, members, methods))
 package {0};
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 
@@ -114,6 +116,10 @@ public class PresetReader {{
 
     public PresetReader(Handlers handlers) {{
         mHandlers = handlers;
+    }}
+
+    public void read(String path) throws IOException {{
+        read(new BufferedReader(new FileReader(path)));
     }}
 
     public void read(Reader in) throws IOException {{
