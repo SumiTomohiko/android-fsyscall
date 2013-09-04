@@ -1,0 +1,99 @@
+
+from datatypes import JsonArray
+
+def build_members(g, struct)
+  a = []
+  fmt = "public {0} {1};"
+  struct.members.each() do |name, datatype|
+    a << fmt.format(datatype.java_type, name.to_lower_camel_case())
+  end
+  return a.join("\n" + 2 * g.indent)
+end
+
+def build_classes(g)
+  a = g.structs.map() do |struct|
+    members = build_members(g, struct)
+    next <<EOF.format(struct.java_type, members)
+    public static class {0} {{
+
+        {1}
+    }}
+EOF
+  end
+  return a.map(&call_method('trim)).join("\n\n" + g.indent)
+end
+
+def build_member_code(g, struct, name, datatype)
+  object_name = struct.name.to_lower_camel_case()
+  member_name = name.to_lower_camel_case()
+  if datatype.kind_of?(JsonArray)
+    elem_type = datatype.datatype.java_type
+    return <<EOF.format(name, elem_type, object_name, member_name)
+        writer.name("{0}");
+        writer.beginArray();
+        for ({1} elem: {2}.{3}) {{
+            write(writer, elem);
+        }}
+        writer.endArray();
+EOF
+  end
+  return <<EOF.format(name, object_name, member_name)
+        writer.name("{0}").value({1}.{2});
+EOF
+end
+
+def build_struct_code(g, struct)
+  a = []
+  struct.members.each() do |name, datatype|
+    a << build_member_code(g, struct, name, datatype)
+  end
+  return a.map(&call_method('trim)).join("\n" + 2 * g.indent)
+end
+
+def build_methods(g)
+  a = g.structs.map() do |struct|
+    code = build_struct_code(g, struct)
+    next <<EOF.format(struct.java_type, struct.name.to_lower_camel_case(), code)
+    private static void write(JsonWriter writer, {0} {1}) throws IOException {{
+        writer.beginObject();
+        {2}
+        writer.endObject();
+    }}
+EOF
+  end
+  return a.map(&call_method('trim)).join("\n\n" + g.indent)
+end
+
+def generate_writer(g, dest)
+  File.open(dest, "w") do |fp|
+    classes = build_classes(g)
+    methods = build_methods(g)
+
+    fp.write(<<EOF.format(g.package, classes, methods))
+package {0};
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.List;
+
+import android.util.JsonWriter;
+
+public class PresetWriter {{
+
+    {1}
+
+    public static void write(Writer out, Main main) throws IOException {{
+        JsonWriter writer = new JsonWriter(out);
+        write(writer, main);
+        writer.close();
+    }}
+
+    {2}
+}}
+
+// vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
+EOF
+  end
+end
+
+# vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

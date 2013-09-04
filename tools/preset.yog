@@ -2,6 +2,7 @@
 from datatypes import JSON_INT, JSON_STRING
 from parser import parse_datatypes
 from reader import generate_reader
+from writer import generate_writer
 
 class Global
 
@@ -36,6 +37,7 @@ def main(src, dest_dir)
 
   dir = dest_dir / package.gsub(".", "/").to_path()
   generate_reader(g, dir / "PresetReader.java")
+  generate_writer(g, dir / "PresetWriter.java")
 end
 
 main(ARGV[1].to_path(), ARGV[2].to_path())
