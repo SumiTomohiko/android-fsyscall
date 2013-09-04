@@ -21,10 +21,6 @@ class Global
     self.add_datatype(struct)
     self.structs << struct
   end
-
-  def each_struct(&block)
-    self.structs.each(&block)
-  end
 end
 
 def main(src, dest_dir)
