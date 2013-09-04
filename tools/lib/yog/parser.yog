@@ -1,45 +1,36 @@
 
-from datatypes import JSON_INT, JSON_STRING, JsonArray, JsonDatatype, JsonObject
+from datatypes import JsonArray, JsonObject
 
-def parse_datatype(datatypes, s)
+def parse_datatype(g, s)
   if (m = /\Aarray\s+of\s+(?<datatype>\w+)\Z/.match(s)) != nil
-    name = m.group("datatype")
-    return JsonArray.new(name, datatypes[name])
+    return JsonArray.new(g.datatypes[m.group("datatype")])
   end
-  return datatypes[s]
+  return g.datatypes[s]
 end
 
-def parse_member(datatypes, line)
-  a = line.split(":").map(&get_attr('trim) + apply())
-  return a[0], parse_datatype(datatypes, a[1])
+def parse_member(g, line)
+  a = line.split(":").map(&call_method('trim))
+  return a[0], parse_datatype(g, a[1])
 end
 
-def parse_struct(name, datatypes, fp)
+def parse_struct(g, name, fp)
   object = JsonObject.new(name)
   while (line = fp.readline().trim()) != "end"
-    name, datatype = parse_member(datatypes, line)
+    name, datatype = parse_member(g, line)
     object.members[name] = datatype
   end
   return object
 end
 
-def parse_datatypes(src)
-  datatypes = {
-    "int": JSON_INT,
-    "string": JSON_STRING
-  }
-
+def parse_datatypes(g, src)
   File.open(src) do |fp|
     while (line = fp.readline()) != nil
       s = line.trim()
       if (m = /\Astruct\s+(?<name>\w+)\Z/.match(s)) != nil
-        name = m.group("name")
-        datatypes[name] = parse_struct(name, datatypes, fp)
+        g.add_struct(parse_struct(g, m.group("name"), fp))
       end
     end
   end
-
-  return datatypes
 end
 
 # vim: tabstop=2 shiftwidth=2 expandtab softtabstop=2

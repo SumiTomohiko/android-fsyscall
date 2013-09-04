@@ -1,14 +1,41 @@
 
+from datatypes import JSON_INT, JSON_STRING
 from parser import parse_datatypes
 from reader import generate_reader
 
-PACKAGE = "jp.gr.java_conf.neko_daisuki.android.nexec.client.demo"
+class Global
+
+  def init(package)
+    self.package = package
+    self.datatypes = {}
+    self.structs = []
+    self.indent = 4 * " "
+  end
+
+  def add_datatype(datatype)
+    self.datatypes[datatype.name] = datatype
+  end
+
+  def add_struct(struct)
+    self.add_datatype(struct)
+    self.structs << struct
+  end
+
+  def each_struct(&block)
+    self.structs.each(&block)
+  end
+end
 
 def main(src, dest_dir)
-  datatypes = parse_datatypes(src)
+  package = "jp.gr.java_conf.neko_daisuki.android.nexec.client.demo"
 
-  dir = dest_dir / PACKAGE.gsub(".", "/").to_path()
-  generate_reader(datatypes, dir / "PresetReader.java", PACKAGE)
+  g = Global.new(package)
+  g.add_datatype(JSON_INT)
+  g.add_datatype(JSON_STRING)
+  parse_datatypes(g, src)
+
+  dir = dest_dir / package.gsub(".", "/").to_path()
+  generate_reader(g, dir / "PresetReader.java")
 end
 
 main(ARGV[1].to_path(), ARGV[2].to_path())

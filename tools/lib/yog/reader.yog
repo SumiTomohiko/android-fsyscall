@@ -1,57 +1,29 @@
 
-from datatypes import JsonArray, JsonObject, JsonPrimitive
-
-INDENT = 4 * " "
-
-def to_camel(s, first)
-  a = []
-  flag = first
-  s.each() do |c|
-    if c == "_"
-      flag = true
-      next
-    end
-    if !flag
-      a << c
-      next
-    end
-    pos = "abcdefghijklmnopqrstuvwxyz".find(c)
-    a << (pos == -1 ? c : "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[pos])
-    flag = false
-  end
-  return a.join("")
-end
-
-def to_lower_camel(s)
-  return to_camel(s, false)
-end
-
-def to_upper_camel(s)
-  return to_camel(s, true)
-end
+from datatypes import JsonArray
 
 def to_upper_camel_single(s)
-  t = to_upper_camel(s)
+  t = s.to_upper_camel_case()
   return t[-1] == "s" ? t.slice(0, t.size - 1) : t
 end
 
-def build_prototypes(datatype)
+def build_prototypes(g, struct)
   a = []
-  datatype.members.each() do |name, datatype|
-    if datatype.kind_of?(JsonPrimitive)
-      fmt = "public void onRead{0}({1} value);"
-      a << fmt.format(to_upper_camel(name), datatype.java_type)
+  struct.members.each() do |name, datatype|
+    if datatype.kind_of?(JsonArray)
+      s = to_upper_camel_single(name)
+      a << "public void onBegin{0}();".format(s)
+      a << "public void onEnd{0}();".format(s)
       next
     end
-    a << "public void onBegin{0}();".format(to_upper_camel_single(name))
-    a << "public void onEnd{0}();".format(to_upper_camel_single(name))
+    fmt = "public void onRead{0}({1} {2});"
+    a << fmt.format(name.to_upper_camel_case(), datatype.java_type, name.to_lower_camel_case())
   end
   return a
 end
 
-def build_handler(name, struct)
-  methods = build_prototypes(struct).join("\n" + 2 * INDENT)
-  return <<EOF.format(to_upper_camel(name), methods)
+def build_handler(g, struct)
+  methods = build_prototypes(g, struct).join("\n" + 2 * g.indent)
+  return <<EOF.format(struct.name.to_upper_camel_case(), methods)
     public interface {0}Handler {{
 
         {1}
@@ -59,48 +31,28 @@ def build_handler(name, struct)
 EOF
 end
 
-def build_handlers(datatypes)
-  handlers = []
-  datatypes.each() do |name, datatype|
-    if datatype.kind_of?(JsonObject)
-      handlers << build_handler(name, datatype)
-    end
-  end
-  return handlers.map(&get_attr('trim) + apply()).join("\n\n" + INDENT)
+def build_handlers(g)
+  handlers = g.structs.map(&build_handler.partial(g))
+  return handlers.map(&call_method('trim)).join("\n\n" + g.indent)
 end
 
-def build_handlers_members(datatypes)
-  a = []
-  datatypes.each() do |name, datatype|
-    if datatype.kind_of?(JsonPrimitive)
-      next
-    end
+def build_handlers_members(g)
+  a = g.structs.map() do |struct|
     fmt = "public {0}Handler {1}Handler;"
-    a << fmt.format(to_upper_camel(name), to_lower_camel(name))
+    name = struct.name
+    next fmt.format(name.to_upper_camel_case(), name.to_lower_camel_case())
   end
-  return a.join("\n" + 2 * INDENT)
+  return a.join("\n" + 2 * g.indent)
 end
 
-def build_methods(datatypes)
+def build_methods(g)
   a = []
-  datatypes.each() do |name, datatype|
-    if !datatype.kind_of?(JsonObject)
-      next
-    end
-
+  g.structs.each() do |struct|
+    name = struct.name
     members = []
-    datatype.members.each() do |member, datatype|
-      if datatype.kind_of?(JsonPrimitive)
-        members << <<EOF.format(member, to_lower_camel(name), to_upper_camel(member), to_upper_camel(datatype.java_type))
-            if (name.equals("{0}")) {{
-                mHandlers.{1}Handler.onRead{2}(reader.next{3}());
-                continue;
-            }}
-EOF
-        next
-      end
+    struct.members.each() do |member, datatype|
       if datatype.kind_of?(JsonArray)
-        members << <<EOF.format(member, to_lower_camel(name), to_upper_camel_single(member), to_upper_camel(datatype.datatype.name))
+        members << <<EOF.format(member, name.to_lower_camel_case(), to_upper_camel_single(member), datatype.datatype.name.to_upper_camel_case())
             if (name.equals("{0}")) {{
                 reader.beginArray();
                 while (reader.hasNext()) {{
@@ -109,13 +61,20 @@ EOF
                     mHandlers.{1}Handler.onEnd{2}();
                 }}
                 reader.endArray();
+                continue;
             }}
 EOF
         next
       end
+      members << <<EOF.format(member, name.to_lower_camel_case(), member.to_upper_camel_case(), datatype.java_type.to_upper_camel_case())
+            if (name.equals("{0}")) {{
+                mHandlers.{1}Handler.onRead{2}(reader.next{3}());
+                continue;
+            }}
+EOF
     end
 
-    a << <<EOF.format(to_upper_camel(name), members.map(&call_method('trim)).join("\n" + 3 * INDENT))
+    a << <<EOF.format(name.to_upper_camel_case(), members.map(&call_method('trim)).join("\n" + 3 * g.indent))
     private void read{0}(JsonReader reader) throws IOException {{
         reader.beginObject();
         while (reader.hasNext()) {{
@@ -126,15 +85,15 @@ EOF
     }}
 EOF
   end
-  return a.map(&call_method('trim)).join("\n\n" + INDENT)
+  return a.map(&call_method('trim)).join("\n\n" + g.indent)
 end
 
-def generate_reader(datatypes, dest, package)
+def generate_reader(g, dest)
   File.open(dest, "w") do |fp|
-    handlers = build_handlers(datatypes)
-    members = build_handlers_members(datatypes)
-    methods = build_methods(datatypes)
-    fp.write(<<EOF.format(package, handlers, members, methods))
+    handlers = build_handlers(g)
+    members = build_handlers_members(g)
+    methods = build_methods(g)
+    fp.write(<<EOF.format(g.package, handlers, members, methods))
 package {0};
 
 import java.io.IOException;

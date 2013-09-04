@@ -1,26 +1,19 @@
 
 class JsonDatatype
 
-  def init(name)
-    self.name = name
-  end
-end
-
-class JsonPrimitive > JsonDatatype
-
   def init(name, java_type)
-    super(name)
+    self.name = name
     self.java_type = java_type
   end
 end
 
-JSON_INT = JsonPrimitive.new("int", "int")
-JSON_STRING = JsonPrimitive.new("string", "String")
+JSON_INT = JsonDatatype.new("int", "int")
+JSON_STRING = JsonDatatype.new("string", "String")
 
 class JsonArray > JsonDatatype
 
-  def init(name, datatype)
-    super(name)
+  def init(datatype)
+    super(nil, "List<{0}>".format(datatype.java_type))
     self.datatype = datatype
   end
 end
@@ -28,7 +21,7 @@ end
 class JsonObject > JsonDatatype
 
   def init(name)
-    super(name)
+    super(name, name.to_upper_camel_case())
     self.members = {}
   end
 end
