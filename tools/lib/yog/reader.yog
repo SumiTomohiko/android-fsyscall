@@ -123,7 +123,13 @@ public class PresetReader {{
     }}
 
     public void read(Reader in) throws IOException {{
-        readMain(new JsonReader(in));
+        JsonReader reader = new JsonReader(in);
+        try {{
+            readMain(reader);
+        }}
+        finally {{
+            reader.close();
+        }}
     }}
 
     {3}
