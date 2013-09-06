@@ -1,10 +1,12 @@
 package jp.gr.java_conf.neko_daisuki.android.nexec.client.demo;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,7 +21,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -33,37 +34,160 @@ public class MainActivity extends FragmentActivity {
 
     public static class HostFragment extends BaseFragment {
 
+        public interface OnUpdateDocumentListener {
+
+            public void onUpdateDocument(String host, String port);
+        }
+
+        private OnUpdateDocumentListener mOnUpdateDocumentListener;
+        private EditText mHostEdit;
+        private EditText mPortEdit;
+
         public View onCreateView(LayoutInflater inflater,
                                  ViewGroup container,
                                  Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_host, null);
-            MainActivity activity = getMainActivity();
-            activity.mHostEdit = getEditText(view, R.id.host_edit);
-            activity.mPortEdit = getEditText(view, R.id.port_edit);
+            mHostEdit = getEditText(view, R.id.host_edit);
+            mPortEdit = getEditText(view, R.id.port_edit);
             return view;
+        }
+
+        public void onPause() {
+            super.onPause();
+            mOnUpdateDocumentListener.onUpdateDocument(getHost(), getPort());
+            //showToast("HostFragment.onPause()");
+        }
+
+        public void onResume() {
+            super.onResume();
+            //showToast("HostFragment.onResume()");
+            requestUpdateView();
+        }
+
+        public void onStop() {
+            super.onStop();
+            //showToast("HostFragment.onStop()");
+        }
+
+        public void onDestroy() {
+            super.onDestroy();
+            //showToast("HostFragment.onDestroy()");
+        }
+
+        public void onDetach() {
+            super.onDetach();
+            //showToast("HostFragment.onDetach()");
+        }
+
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            //showToast("HostFragment.onAttach()");
+            ((MainActivity)activity).setUpHostFragment(this);
+        }
+
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            //showToast("HostFragment.onCreate()");
+        }
+
+        public void setOnUpdateDocumentListener(OnUpdateDocumentListener l) {
+            mOnUpdateDocumentListener = l;
+        }
+
+        public void setHost(String host) {
+            mHostEdit.setText(host);
+        }
+
+        public void setPort(String port) {
+            mPortEdit.setText(port);
+        }
+
+        public String getHost() {
+            return getEditString(mHostEdit);
+        }
+
+        public String getPort() {
+            return getEditString(mPortEdit);
         }
     }
 
     public static class CommandFragment extends BaseFragment {
 
+        public interface OnUpdateDocumentListener {
+
+            public void onUpdateDocument(String command);
+        }
+
+        private OnUpdateDocumentListener mOnUpdateDocumentListener;
+        private EditText mArgsEdit;
+
         public View onCreateView(LayoutInflater inflater,
                                  ViewGroup container,
                                  Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_command, null);
-            MainActivity activity = getMainActivity();
-            activity.mArgsEdit = getEditText(view, R.id.args_edit);
+            mArgsEdit = getEditText(view, R.id.args_edit);
             return view;
+        }
+
+        public void onPause() {
+            super.onPause();
+            mOnUpdateDocumentListener.onUpdateDocument(getCommand());
+            //showToast("CommandFragment.onPause()");
+        }
+
+        public void onResume() {
+            super.onResume();
+            //showToast("CommandFragment.onResume()");
+            requestUpdateView();
+        }
+
+        public void onStop() {
+            super.onStop();
+            //showToast("CommandFragment.onStop()");
+        }
+
+        public void onDestroy() {
+            super.onDestroy();
+            //showToast("CommandFragment.onDestroy()");
+        }
+
+        public void onDetach() {
+            super.onDetach();
+            //showToast("CommandFragment.onDetach()");
+        }
+
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            //showToast("CommandFragment.onAttach()");
+            ((MainActivity)activity).setUpCommandFragment(this);
+        }
+
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            //showToast("CommandFragment.onCreate()");
+        }
+
+        public void setOnUpdateDocumentListener(OnUpdateDocumentListener l) {
+            mOnUpdateDocumentListener = l;
+        }
+
+        public void setCommand(String command) {
+            mArgsEdit.setText(command);
+        }
+
+        public String getCommand() {
+            return getEditString(mArgsEdit);
         }
     }
 
     public static class PermissionFragment extends BaseFragment {
 
-        private class Adapter extends ArrayAdapter<Permission> {
+        private class Adapter extends BaseAdapter {
 
             private LayoutInflater mInflater;
 
-            public Adapter(MainActivity activity) {
-                super(activity, 0, activity.mPermissions.toList());
+            public Adapter() {
+                Activity activity = getActivity();
                 String name = Context.LAYOUT_INFLATER_SERVICE;
                 mInflater = (LayoutInflater)activity.getSystemService(name);
             }
@@ -75,84 +199,122 @@ public class MainActivity extends FragmentActivity {
                 View view = mInflater.inflate(layoutId, parent, false);
                 int textId = R.id.pattern_text;
                 TextView patternText = (TextView)view.findViewById(textId);
-                Permissions perms = getMainActivity().mPermissions;
-                patternText.setText(perms.get(position).getPattern());
+                patternText.setText(mPermissions.get(position).getPattern());
                 return view;
+            }
+
+            public long getItemId(int position) {
+                return 0;
+            }
+
+            public Object getItem(int position) {
+                return null;
+            }
+
+            public int getCount() {
+                return mPermissions != null ? mPermissions.size() : 0;
             }
         }
 
         private class AddButtonOnClickListener implements View.OnClickListener {
 
             private EditText mPatternEdit;
-            private BaseAdapter mAdapter;
 
-            public AddButtonOnClickListener(EditText patternEdit,
-                                            BaseAdapter adapter) {
+            public AddButtonOnClickListener(EditText patternEdit) {
                 mPatternEdit = patternEdit;
-                mAdapter = adapter;
             }
 
             public void onClick(View view) {
-                MainActivity activity = getMainActivity();
-                String pattern = activity.getEditText(mPatternEdit);
+                String pattern = mPatternEdit.getEditableText().toString();
                 if (pattern.equals("")) {
                     return;
                 }
 
-                activity.mPermissions.add(new Permission(pattern));
+                mPermissions.add(new Permission(pattern));
                 mAdapter.notifyDataSetChanged();
             }
         }
+
+        private Permissions mPermissions;
+        private BaseAdapter mAdapter;
 
         public View onCreateView(LayoutInflater inflater,
                                  ViewGroup container,
                                  Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_permission, null);
-            MainActivity activity = getMainActivity();
             int listId = R.id.permission_list;
             ListView listView = (ListView)view.findViewById(listId);
-            BaseAdapter adapter = new Adapter(activity);
-            listView.setAdapter(adapter);
+            mAdapter = new Adapter();
+            listView.setAdapter(mAdapter);
 
             View addButton = view.findViewById(R.id.add_button);
-            int patternId = R.id.pattern_edit;
-            EditText patternEdit = (EditText)view.findViewById(patternId);
             View.OnClickListener listener = new AddButtonOnClickListener(
-                    patternEdit, adapter);
+                    (EditText)view.findViewById(R.id.pattern_edit));
             addButton.setOnClickListener(listener);
 
             return view;
+        }
+
+        public void onPause() {
+            super.onPause();
+            //showToast("PermissionFragment.onPause()");
+        }
+
+        public void onResume() {
+            super.onResume();
+            //showToast("PermissionFragment.onResume()");
+            requestUpdateView();
+        }
+
+        public void onStop() {
+            super.onStop();
+            //showToast("PermissionFragment.onStop()");
+        }
+
+        public void onDestroy() {
+            super.onDestroy();
+            //showToast("PermissionFragment.onDestroy()");
+        }
+
+        public void onDetach() {
+            super.onDetach();
+            //showToast("PermissionFragment.onDetach()");
+        }
+
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            //showToast("PermissionFragment.onAttach()");
+            ((MainActivity)activity).setUpPermissionFragment(this);
+        }
+
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            //showToast("PermissionFragment.onCreate()");
+        }
+
+        public void setPermissions(Permissions permissions) {
+            mPermissions = permissions;
+            mAdapter.notifyDataSetChanged();
         }
     }
 
     public static class RunFragment extends BaseFragment {
 
-        private static class OnGetLineListener
-                implements NexecClient.OnGetLineListener {
+        public interface OnRunListener {
 
-            private EditText mEditText;
-
-            public OnGetLineListener(EditText editText) {
-                mEditText = editText;
-            }
-
-            public void onGetLine(String s) {
-                mEditText.getText().append(s);
-            }
+            public void onRun();
         }
+
+        private OnRunListener mRunListener;
+
+        private EditText mStdoutEdit;
+        private EditText mStderrEdit;
+        private View mRunButton;
 
         private class RunButtonOnClickListener implements View.OnClickListener {
 
             public void onClick(View view) {
-                Settings settings = new Settings();
-                MainActivity activity = getMainActivity();
-                settings.host = activity.getEditText(activity.mHostEdit);
-                String port = activity.getEditText(activity.mPortEdit);
-                settings.port = Integer.parseInt(port);
-                String args = activity.getEditText(activity.mArgsEdit);
-                settings.args = args.split("\\s");
-                settings.files = activity.mPermissions.listPatterns();
-                activity.mNexecClient.request(settings, REQUEST_CONFIRM);
+                mRunListener.onRun();
             }
         }
 
@@ -160,33 +322,237 @@ public class MainActivity extends FragmentActivity {
                                  ViewGroup container,
                                  Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_run, null);
-            MainActivity activity = getMainActivity();
 
-            EditText stdoutEdit = getEditText(view, R.id.stdout_edit);
-            OnGetLineListener outListener = new OnGetLineListener(stdoutEdit);
-            activity.mStdoutEdit = stdoutEdit;
-            activity.mNexecClient.setStdoutOnGetLineListener(outListener);
+            mStdoutEdit = getEditText(view, R.id.stdout_edit);
+            mStderrEdit = getEditText(view, R.id.stderr_edit);
+            mRunButton = view.findViewById(R.id.run_button);
+            mRunButton.setOnClickListener(new RunButtonOnClickListener());
 
-            EditText stderrEdit = getEditText(view, R.id.stderr_edit);
-            OnGetLineListener errListener = new OnGetLineListener(stderrEdit);
-            activity.mStderrEdit = stderrEdit;
-            activity.mNexecClient.setStderrOnGetLineListener(errListener);
-
-            View button = view.findViewById(R.id.run_button);
-            activity.mRunButton = button;
-            button.setOnClickListener(new RunButtonOnClickListener());
             return view;
+        }
+
+        public void onPause() {
+            super.onPause();
+            //showToast("RunFragment.onPause()");
+        }
+
+        public void onResume() {
+            super.onResume();
+            //showToast("RunFragment.onResume()");
+        }
+
+        public void onStop() {
+            super.onStop();
+            //showToast("RunFragment.onStop()");
+        }
+
+        public void onDestroy() {
+            super.onDestroy();
+            //showToast("RunFragment.onDestroy()");
+        }
+
+        public void onDetach() {
+            super.onDetach();
+            //showToast("RunFragment.onDetach()");
+        }
+
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            //showToast("RunFragment.onAttach()");
+            ((MainActivity)activity).setUpRunFragment(this);
+        }
+
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            //showToast("RunFragment.onCreate()");
+        }
+
+        public EditText getStdoutEditText() {
+            return mStdoutEdit;
+        }
+
+        public EditText getStderrEditText() {
+            return mStderrEdit;
+        }
+
+        public void disableRunButton() {
+            mRunButton.setEnabled(false);
+        }
+
+        public void enableRunButton() {
+            mRunButton.setEnabled(true);
+        }
+
+        public void setOnRunListener(OnRunListener listener) {
+            mRunListener = listener;
+        }
+
+        public void clear() {
+            clearEditText(mStdoutEdit);
+            clearEditText(mStderrEdit);
+        }
+
+        private void clearEditText(EditText editText) {
+            editText.getEditableText().clear();
         }
     }
 
-    private abstract static class BaseFragment extends Fragment {
+    private class HostOnUpdateDocumentListener
+            implements HostFragment.OnUpdateDocumentListener {
 
-        public MainActivity getMainActivity() {
-            return (MainActivity)getActivity();
+        public void onUpdateDocument(String host, String port) {
+            mHost = host;
+            mPort = port;
+        }
+    }
+
+    private class CommandOnUpdateDocumentListener
+            implements CommandFragment.OnUpdateDocumentListener {
+
+        public void onUpdateDocument(String command) {
+            mCommand = command;
+        }
+    }
+
+    private static class OnGetLineListener
+            implements NexecClient.OnGetLineListener {
+
+        private EditText mEditText;
+
+        public OnGetLineListener(EditText editText) {
+            mEditText = editText;
+        }
+
+        public void onGetLine(String s) {
+            mEditText.getText().append(s);
+        }
+    }
+
+    private static class BaseFragment extends Fragment {
+
+        public interface OnUpdateViewListener {
+
+            public void onUpdateView();
+        }
+
+        private class FakeOnUpdateViewListener implements OnUpdateViewListener {
+
+            public void onUpdateView() {
+            }
+        }
+
+        private OnUpdateViewListener mOnUpdateViewListener;
+
+        public BaseFragment() {
+            setOnUpdateViewListener(null);
+        }
+
+        public void setOnUpdateViewListener(OnUpdateViewListener listener) {
+            mOnUpdateViewListener = listener != null ? listener : new FakeOnUpdateViewListener();
+        }
+
+        public void onResume() {
+            super.onResume();
         }
 
         protected EditText getEditText(View view, int id) {
             return (EditText)view.findViewById(id);
+        }
+
+        protected String getEditString(EditText view) {
+            return view != null ? view.getEditableText().toString() : "";
+        }
+
+        protected void showToast(String msg) {
+            Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
+            Log.i("nexec-demo", msg);
+        }
+
+        protected void requestUpdateView() {
+            mOnUpdateViewListener.onUpdateView();
+        }
+    }
+
+    private class HostOnUpdateViewListener
+            implements BaseFragment.OnUpdateViewListener {
+
+        public void onUpdateView() {
+            mHostFragment.setHost(mHost);
+            mHostFragment.setPort(mPort);
+        }
+    }
+
+    private class CommandOnUpdateViewListener
+            implements BaseFragment.OnUpdateViewListener {
+
+        public void onUpdateView() {
+            mCommandFragment.setCommand(mCommand);
+        }
+    }
+
+    private class PermissionOnUpdateViewListener
+            implements BaseFragment.OnUpdateViewListener {
+
+        public void onUpdateView() {
+            mPermissionFragment.setPermissions(mPermissions);
+        }
+    }
+
+    private class PresetReadHelper {
+
+        private Permission mPermission;
+
+        private class MainHandler implements PresetReader.MainHandler {
+
+            public void onReadCurrentDirectory(String currentDirectory) {
+            }
+
+            public void onReadCommand(String command) {
+                mCommand = command;
+            }
+
+            public void onBeginLink() {
+            }
+
+            public void onEndLink() {
+            }
+
+            public void onBeginPermission() {
+                mPermission = new Permission();
+            }
+
+            public void onEndPermission() {
+                mPermissions.add(mPermission);
+            }
+
+            public void onBeginEnvironment() {
+            }
+
+            public void onEndEnvironment() {
+            }
+
+            public void onReadHost(String host) {
+                mHost = host;
+            }
+
+            public void onReadPort(String port) {
+                mPort = port;
+            }
+        }
+
+        private class PermissionHandler
+                implements PresetReader.PermissionHandler {
+
+            public void onReadPattern(String pattern) {
+                mPermission.setPattern(pattern);
+            }
+        }
+
+        public void read(String path) throws IOException {
+            PresetReader.Handlers handlers = new PresetReader.Handlers();
+            handlers.mainHandler = new MainHandler();
+            handlers.permissionHandler = new PermissionHandler();
+            new PresetReader(handlers).read(path);
         }
     }
 
@@ -241,7 +607,7 @@ public class MainActivity extends FragmentActivity {
     private class OnFinishListener implements NexecClient.OnFinishListener {
 
         public void onFinish() {
-            mRunButton.setEnabled(true);
+            mRunFragment.enableRunButton();
         }
     }
 
@@ -249,12 +615,24 @@ public class MainActivity extends FragmentActivity {
 
         private String mPattern;
 
+        public Permission() {
+            initialize("");
+        }
+
         public Permission(String pattern) {
+            initialize(pattern);
+        }
+
+        public void setPattern(String pattern) {
             mPattern = pattern;
         }
 
         public String getPattern() {
             return mPattern;
+        }
+
+        private void initialize(String pattern) {
+            mPattern = pattern;
         }
     }
 
@@ -274,6 +652,10 @@ public class MainActivity extends FragmentActivity {
             return mList.get(position);
         }
 
+        public void clear() {
+            mList.clear();
+        }
+
         public List<Permission> toList() {
             return mList;
         }
@@ -286,6 +668,32 @@ public class MainActivity extends FragmentActivity {
             }
             return a;
         }
+
+        public int size() {
+            return mList.size();
+        }
+    }
+
+    private class RunOnRunListener implements RunFragment.OnRunListener {
+
+        public void onRun() {
+            updateDocument();
+
+            Settings settings = new Settings();
+            settings.host = mHost;
+            settings.port = Integer.parseInt(mPort);
+            settings.args = mCommand.split("\\s");
+            settings.files = mPermissions.listPatterns();
+
+            EditText stdout = mRunFragment.getStdoutEditText();
+            mNexecClient.setStdoutOnGetLineListener(
+                    new OnGetLineListener(stdout));
+            EditText stderr = mRunFragment.getStderrEditText();
+            mNexecClient.setStderrOnGetLineListener(
+                    new OnGetLineListener(stderr));
+
+            mNexecClient.request(settings, REQUEST_CONFIRM);
+        }
     }
 
     private enum Key {
@@ -295,15 +703,20 @@ public class MainActivity extends FragmentActivity {
     private static final int REQUEST_CONFIRM = 0;
     private static final String DEFAULT_PRESET_NAME = "default";
 
-    private NexecClient mNexecClient;
-    private Permissions mPermissions;
+    // documents
+    private String mHost = "neko-daisuki.ddo.jp";
+    private String mPort = "57005";
+    private String mCommand = "echo foobarbazquux";
+    private Permissions mPermissions = new Permissions();
 
-    private EditText mHostEdit;
-    private EditText mPortEdit;
-    private EditText mArgsEdit;
-    private EditText mStdoutEdit;
-    private EditText mStderrEdit;
-    private View mRunButton;
+    // views
+    private HostFragment mHostFragment;
+    private CommandFragment mCommandFragment;
+    private PermissionFragment mPermissionFragment;
+    private RunFragment mRunFragment;
+
+    // helpers
+    private NexecClient mNexecClient;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -312,12 +725,15 @@ public class MainActivity extends FragmentActivity {
         return true;
     }
 
+    public void onAttachFragment(Fragment fragment) {
+        super.onAttachFragment(fragment);
+        //showToast("MainActivity.onAttachFragment()");
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mPermissions = new Permissions();
 
         mNexecClient = new NexecClient(this);
         mNexecClient.setOnFinishListener(new OnFinishListener());
@@ -348,23 +764,19 @@ public class MainActivity extends FragmentActivity {
         if ((requestCode != REQUEST_CONFIRM) || (resultCode != RESULT_OK)) {
             return;
         }
-        clearEditText(mStdoutEdit);
-        clearEditText(mStderrEdit);
-        mRunButton.setEnabled(false);
+        mRunFragment.clear();
+        mRunFragment.disableRunButton();
         mNexecClient.execute(data);
+    }
+
+    protected void onResume() {
+        super.onResume();
+        readPreset(DEFAULT_PRESET_NAME);
     }
 
     protected void onPause() {
         super.onPause();
         writePreset(DEFAULT_PRESET_NAME);
-    }
-
-    private void clearEditText(EditText editText) {
-        editText.getEditableText().clear();
-    }
-
-    private String getEditText(EditText view) {
-        return view.getText().toString();
     }
 
     private String getApplicationDirectory() {
@@ -381,9 +793,11 @@ public class MainActivity extends FragmentActivity {
     }
 
     private void writePreset(String presetName) {
+        updateDocument();
+
         PresetWriter.Main main = new PresetWriter.Main();
         main.currentDirectory = "/";
-        main.command = getEditText(mArgsEdit);
+        main.command = mCommand;
         main.links = new ArrayList<PresetWriter.Link>();
         main.permissions = new ArrayList<PresetWriter.Permission>();
         for (Permission perm: mPermissions.toList()) {
@@ -392,17 +806,79 @@ public class MainActivity extends FragmentActivity {
             main.permissions.add(p);
         }
         main.environments = new ArrayList<PresetWriter.Pair>();
-        main.host = getEditText(mHostEdit);
-        main.port = Integer.parseInt(getEditText(mPortEdit));
+        main.host = mHost;
+        main.port = mPort;
 
         try {
             PresetWriter.write(getPresetPath(presetName), main);
         }
         catch (IOException e) {
-            String fmt = "nexec demo: failed to write preset %s: %s";
-            String msg = String.format(fmt, presetName, e.getMessage());
-            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+            String fmt = "failed to write preset %s";
+            reportException(String.format(fmt, presetName), e);
         }
+    }
+
+    private void readPreset(String presetName) {
+        mPermissions.clear();
+        try {
+            new PresetReadHelper().read(getPresetPath(presetName));
+        }
+        catch (FileNotFoundException e) {
+            // Ignore. This is usual.
+        }
+        catch (IOException e) {
+            String fmt = "failed to read preset %s";
+            reportException(String.format(fmt, presetName), e);
+        }
+    }
+
+    private void reportException(String info, Exception e) {
+        String msg = String.format("nexec demo: %s: %s", info, e.getMessage());
+        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+    }
+
+    private void updateDocument() {
+        if (mHostFragment.isResumed()) {
+            mHost = mHostFragment.getHost();
+            mPort = mHostFragment.getPort();
+        }
+        if (mCommandFragment.isResumed()) {
+            mCommand = mCommandFragment.getCommand();
+        }
+    }
+
+    /*
+    private void showToast(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        Log.i("nexec-demo", msg);
+    }
+    */
+
+    private void setUpHostFragment(HostFragment hostFragment) {
+        hostFragment.setOnUpdateViewListener(new HostOnUpdateViewListener());
+        hostFragment.setOnUpdateDocumentListener(
+                new HostOnUpdateDocumentListener());
+        mHostFragment = hostFragment;
+    }
+
+    private void setUpCommandFragment(CommandFragment commandFragment) {
+        commandFragment.setOnUpdateViewListener(
+                new CommandOnUpdateViewListener());
+        commandFragment.setOnUpdateDocumentListener(
+                new CommandOnUpdateDocumentListener());
+        mCommandFragment = commandFragment;
+    }
+
+    private void setUpPermissionFragment(
+            PermissionFragment permissionFragment) {
+        permissionFragment.setOnUpdateViewListener(
+                new PermissionOnUpdateViewListener());
+        mPermissionFragment = permissionFragment;
+    }
+
+    private void setUpRunFragment(RunFragment runFragment) {
+        runFragment.setOnRunListener(new RunOnRunListener());
+        mRunFragment = runFragment;
     }
 }
 

@@ -15,7 +15,7 @@ end
 
 struct main
     host: string
-    port: int
+    port: string
     command: string
     permissions: array of permission
     current_directory: string
