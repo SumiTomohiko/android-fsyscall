@@ -784,12 +784,16 @@ public class MainActivity extends FragmentActivity {
         return String.format("%s/.nexec-demo", dir);
     }
 
+    private String getPresetDirectory() {
+        return String.format("%s/preset", getApplicationDirectory());
+    }
+
     private void makeApplicationDirectory() {
-        new File(getApplicationDirectory()).mkdir();
+        new File(getPresetDirectory()).mkdirs();
     }
 
     private String getPresetPath(String presetName) {
-        return String.format("%s/%s", getApplicationDirectory(), presetName);
+        return String.format("%s/%s", getPresetDirectory(), presetName);
     }
 
     private void writePreset(String presetName) {
