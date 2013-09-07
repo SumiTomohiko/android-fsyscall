@@ -121,6 +121,11 @@ public class MainActivity extends FragmentActivity {
             return fragment;
         }
 
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+            mListener = ((MainActivity)getActivity()).mReadDialogListner;
+        }
+
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             mNames = getArguments().getStringArray(Key.Names.name());
@@ -139,10 +144,6 @@ public class MainActivity extends FragmentActivity {
             button.setOnClickListener(new CancelButtonOnClickListener());
 
             return view;
-        }
-
-        public void setListener(Listener listener) {
-            mListener = listener;
         }
     }
 
@@ -523,7 +524,6 @@ public class MainActivity extends FragmentActivity {
         public void run() {
             ReadPresetDialog f = ReadPresetDialog.newInstance(listPresets());
             f.show(getFragmentManager(), "");
-            f.setListener(new ReadPresetDialogListener());
         }
 
         private String[] listPresets() {
@@ -857,6 +857,7 @@ public class MainActivity extends FragmentActivity {
     // helpers
     private NexecClient mNexecClient;
     private SparseArray<MenuProc> mMenuProcs;
+    private ReadPresetDialogListener mReadDialogListner;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -884,6 +885,7 @@ public class MainActivity extends FragmentActivity {
         mNexecClient = new NexecClient(this);
         mNexecClient.setOnFinishListener(new OnFinishListener());
         setUpMenu();
+        mReadDialogListner = new ReadPresetDialogListener();
 
         ViewPager pager = (ViewPager)findViewById(R.id.pager);
         pager.setAdapter(new Adapter(getSupportFragmentManager()));
