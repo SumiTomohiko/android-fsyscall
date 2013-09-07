@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">nexec client demo</string>
-    <string name="action_read_preset">Read preset...</string>
+    <string name="action_read_preset">Read a preset...</string>
     <string name="label_negative">Cancel</string>
     <string name="label_read">Read</string>
 </resources>
