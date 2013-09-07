@@ -35,6 +35,58 @@ import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient;
 
 public class MainActivity extends FragmentActivity {
 
+    public static class WritePresetDialog extends DialogFragment {
+
+        public interface Listener {
+
+            public void onOkay(String name);
+        }
+
+        private class OkayButtonOnClickListener
+                implements View.OnClickListener {
+
+            public void onClick(View view) {
+                mListener.onOkay(mNameEdit.getEditableText().toString());
+                dismiss();
+            }
+        }
+
+        private class CancelButtonOnClickListener
+                implements View.OnClickListener {
+
+            public void onClick(View view) {
+                dismiss();
+            }
+        }
+
+        private EditText mNameEdit;
+        private Listener mListener;
+
+        public static WritePresetDialog newInstance() {
+            return new WritePresetDialog();
+        }
+
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+            mListener = ((MainActivity)getActivity()).mWriteDialogListener;
+        }
+
+        public View onCreateView(LayoutInflater inflater,
+                                 ViewGroup container,
+                                 Bundle savedInstanceState) {
+            getDialog().setTitle("Give a preset name");
+            View view = inflater.inflate(R.layout.dialog_write_preset, null);
+
+            mNameEdit = (EditText)view.findViewById(R.id.name_edit);
+            View okayButton = view.findViewById(R.id.positive_button);
+            okayButton.setOnClickListener(new OkayButtonOnClickListener());
+            View cancelButton = view.findViewById(R.id.negative_button);
+            cancelButton.setOnClickListener(new CancelButtonOnClickListener());
+
+            return view;
+        }
+    }
+
     public static class ReadPresetDialog extends DialogFragment {
 
         public interface Listener {
@@ -510,6 +562,14 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    private class WritePresetDialogListener
+            implements WritePresetDialog.Listener {
+
+        public void onOkay(String name) {
+            writePreset(name);
+        }
+    }
+
     private class ReadPresetDialogListener
             implements ReadPresetDialog.Listener {
 
@@ -528,6 +588,13 @@ public class MainActivity extends FragmentActivity {
 
         private String[] listPresets() {
             return new File(getPresetDirectory()).list();
+        }
+    }
+
+    private class WritePresetProc implements MenuProc {
+
+        public void run() {
+            WritePresetDialog.newInstance().show(getFragmentManager(), "");
         }
     }
 
@@ -858,6 +925,7 @@ public class MainActivity extends FragmentActivity {
     private NexecClient mNexecClient;
     private SparseArray<MenuProc> mMenuProcs;
     private ReadPresetDialogListener mReadDialogListner;
+    private WritePresetDialog.Listener mWriteDialogListener;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -886,6 +954,7 @@ public class MainActivity extends FragmentActivity {
         mNexecClient.setOnFinishListener(new OnFinishListener());
         setUpMenu();
         mReadDialogListner = new ReadPresetDialogListener();
+        mWriteDialogListener = new WritePresetDialogListener();
 
         ViewPager pager = (ViewPager)findViewById(R.id.pager);
         pager.setAdapter(new Adapter(getSupportFragmentManager()));
@@ -1037,6 +1106,7 @@ public class MainActivity extends FragmentActivity {
     private void setUpMenu() {
         mMenuProcs = new SparseArray<MenuProc>();
         mMenuProcs.put(R.id.action_read_preset, new ReadPresetProc());
+        mMenuProcs.put(R.id.action_write_preset, new WritePresetProc());
     }
 
     private void updateView(BaseFragment fragment) {

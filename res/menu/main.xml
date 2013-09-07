@@ -2,6 +2,9 @@
     <item
         android:id="@+id/action_read_preset"
         android:title="@string/action_read_preset"/>
+    <item
+        android:id="@+id/action_write_preset"
+        android:title="@string/action_write_preset"/>
 </menu>
 <!--
 vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
