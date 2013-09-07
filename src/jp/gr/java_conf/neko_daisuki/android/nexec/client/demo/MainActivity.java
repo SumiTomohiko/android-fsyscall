@@ -22,6 +22,7 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View.OnClickListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -42,8 +43,7 @@ public class MainActivity extends FragmentActivity {
             public void onOkay(String name);
         }
 
-        private class OkayButtonOnClickListener
-                implements View.OnClickListener {
+        private class OkayButtonOnClickListener implements OnClickListener {
 
             public void onClick(View view) {
                 mListener.onOkay(mNameEdit.getEditableText().toString());
@@ -51,8 +51,7 @@ public class MainActivity extends FragmentActivity {
             }
         }
 
-        private class CancelButtonOnClickListener
-                implements View.OnClickListener {
+        private class CancelButtonOnClickListener implements OnClickListener {
 
             public void onClick(View view) {
                 dismiss();
@@ -96,8 +95,7 @@ public class MainActivity extends FragmentActivity {
 
         private class Adapter extends BaseAdapter {
 
-            private class ButtonOnClickListener
-                    implements View.OnClickListener {
+            private class ButtonOnClickListener implements OnClickListener {
 
                 private String mName;
 
@@ -148,8 +146,7 @@ public class MainActivity extends FragmentActivity {
             }
         }
 
-        private class CancelButtonOnClickListener
-                implements View.OnClickListener {
+        private class CancelButtonOnClickListener implements OnClickListener {
 
             public void onClick(View view) {
                 dismiss();
@@ -381,7 +378,7 @@ public class MainActivity extends FragmentActivity {
             }
         }
 
-        private class AddButtonOnClickListener implements View.OnClickListener {
+        private class AddButtonOnClickListener implements OnClickListener {
 
             private EditText mPatternEdit;
 
@@ -413,7 +410,7 @@ public class MainActivity extends FragmentActivity {
             listView.setAdapter(mAdapter);
 
             View addButton = view.findViewById(R.id.add_button);
-            View.OnClickListener listener = new AddButtonOnClickListener(
+            OnClickListener listener = new AddButtonOnClickListener(
                     (EditText)view.findViewById(R.id.pattern_edit));
             addButton.setOnClickListener(listener);
 
@@ -476,7 +473,7 @@ public class MainActivity extends FragmentActivity {
         private EditText mStderrEdit;
         private View mRunButton;
 
-        private class RunButtonOnClickListener implements View.OnClickListener {
+        private class RunButtonOnClickListener implements OnClickListener {
 
             public void onClick(View view) {
                 mRunListener.onRun();
