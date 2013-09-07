@@ -563,7 +563,7 @@ public class MainActivity extends FragmentActivity {
             implements WritePresetDialog.Listener {
 
         public void onOkay(String name) {
-            writePreset(name);
+            writePreset(getPresetPath(name));
         }
     }
 
@@ -571,7 +571,7 @@ public class MainActivity extends FragmentActivity {
             implements ReadPresetDialog.Listener {
 
         public void onSelect(String name) {
-            readPreset(name);
+            readPreset(getPresetPath(name));
             updateView();
         }
     }
@@ -986,12 +986,12 @@ public class MainActivity extends FragmentActivity {
 
     protected void onResume() {
         super.onResume();
-        readPreset(DEFAULT_PRESET_NAME);
+        readPreset(getDefaultPresetPath());
     }
 
     protected void onPause() {
         super.onPause();
-        writePreset(DEFAULT_PRESET_NAME);
+        writePreset(getDefaultPresetPath());
     }
 
     private String getApplicationDirectory() {
@@ -1011,7 +1011,7 @@ public class MainActivity extends FragmentActivity {
         return String.format("%s/%s", getPresetDirectory(), presetName);
     }
 
-    private void writePreset(String presetName) {
+    private void writePreset(String path) {
         updateDocument();
 
         PresetWriter.Main main = new PresetWriter.Main();
@@ -1029,25 +1029,25 @@ public class MainActivity extends FragmentActivity {
         main.port = mPort;
 
         try {
-            PresetWriter.write(getPresetPath(presetName), main);
+            PresetWriter.write(path, main);
         }
         catch (IOException e) {
             String fmt = "failed to write preset %s";
-            reportException(String.format(fmt, presetName), e);
+            reportException(String.format(fmt, path), e);
         }
     }
 
-    private void readPreset(String presetName) {
+    private void readPreset(String path) {
         mPermissions.clear();
         try {
-            new PresetReadHelper().read(getPresetPath(presetName));
+            new PresetReadHelper().read(path);
         }
         catch (FileNotFoundException e) {
             // Ignore. This is usual.
         }
         catch (IOException e) {
             String fmt = "failed to read preset %s";
-            reportException(String.format(fmt, presetName), e);
+            reportException(String.format(fmt, path), e);
         }
     }
 
@@ -1116,6 +1116,10 @@ public class MainActivity extends FragmentActivity {
         updateView(mHostFragment);
         updateView(mCommandFragment);
         updateView(mPermissionFragment);
+    }
+
+    private String getDefaultPresetPath() {
+        return String.format("%s/default", getApplicationDirectory());
     }
 }
 
