@@ -805,6 +805,7 @@ public class MainActivity extends FragmentActivity {
     private class OnFinishListener implements NexecClient.OnFinishListener {
 
         public void onFinish() {
+            showToast("Finished.");
             mRunFragment.enableRunButton();
         }
     }
@@ -1066,12 +1067,10 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
-    /*
     private void showToast(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-        Log.i("nexec-demo", msg);
+        String txt = String.format("nexec client demo: %s", msg);
+        Toast.makeText(this, txt, Toast.LENGTH_LONG).show();
     }
-    */
 
     private void setUpHostFragment(HostFragment hostFragment) {
         hostFragment.setOnUpdateViewListener(new HostOnUpdateViewListener());
