@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,8 +18,10 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -31,6 +34,117 @@ import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient.Settings;
 import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient;
 
 public class MainActivity extends FragmentActivity {
+
+    public static class ReadPresetDialog extends DialogFragment {
+
+        public interface Listener {
+
+            public void onSelect(String name);
+        }
+
+        private class Adapter extends BaseAdapter {
+
+            private class ButtonOnClickListener
+                    implements View.OnClickListener {
+
+                private String mName;
+
+                public ButtonOnClickListener(String name) {
+                    mName = name;
+                }
+
+                public void onClick(View view) {
+                    mListener.onSelect(mName);
+                    dismiss();
+                }
+            }
+
+            private LayoutInflater mInflater;
+
+            public Adapter(LayoutInflater inflater) {
+                mInflater = inflater;
+            }
+
+            public View getView(int position,
+                                View convertView,
+                                ViewGroup parent) {
+                String name = mNames[position];
+
+                int layoutId = R.layout.row_preset;
+                View view = mInflater.inflate(layoutId, parent, false);
+
+                int textId = R.id.name_text;
+                TextView nameText = (TextView)view.findViewById(textId);
+                nameText.setText(name);
+
+                View button = view.findViewById(R.id.read_button);
+                button.setOnClickListener(new ButtonOnClickListener(name));
+
+                return view;
+            }
+
+            public long getItemId(int position) {
+                return 0;
+            }
+
+            public Object getItem(int position) {
+                return mNames[position];
+            }
+
+            public int getCount() {
+                return mNames.length;
+            }
+        }
+
+        private class CancelButtonOnClickListener
+                implements View.OnClickListener {
+
+            public void onClick(View view) {
+                dismiss();
+            }
+        }
+
+        private enum Key {
+            Names
+        }
+
+        private String[] mNames;
+        private Listener mListener;
+
+        public static ReadPresetDialog newInstance(String[] names) {
+            ReadPresetDialog fragment = new ReadPresetDialog();
+
+            Bundle args = new Bundle();
+            args.putStringArray(Key.Names.name(), names);
+            fragment.setArguments(args);
+
+            return fragment;
+        }
+
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            mNames = getArguments().getStringArray(Key.Names.name());
+        }
+
+        public View onCreateView(LayoutInflater inflater,
+                                 ViewGroup container,
+                                 Bundle savedInstanceState) {
+            getDialog().setTitle("Select a preset");
+            View view = inflater.inflate(R.layout.dialog_read_preset, null);
+
+            ListView list = (ListView)view.findViewById(R.id.name_list);
+            list.setAdapter(new Adapter(inflater));
+
+            View button = view.findViewById(R.id.negative_button);
+            button.setOnClickListener(new CancelButtonOnClickListener());
+
+            return view;
+        }
+
+        public void setListener(Listener listener) {
+            mListener = listener;
+        }
+    }
 
     public static class HostFragment extends BaseFragment {
 
@@ -397,6 +511,28 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    private class ReadPresetDialogListener
+            implements ReadPresetDialog.Listener {
+
+        public void onSelect(String name) {
+            readPreset(name);
+            updateView();
+        }
+    }
+
+    private class ReadPresetProc implements MenuProc {
+
+        public void run() {
+            ReadPresetDialog f = ReadPresetDialog.newInstance(listPresets());
+            f.show(getFragmentManager(), "");
+            f.setListener(new ReadPresetDialogListener());
+        }
+
+        private String[] listPresets() {
+            return new File(getPresetDirectory()).list();
+        }
+    }
+
     private class HostOnUpdateDocumentListener
             implements HostFragment.OnUpdateDocumentListener {
 
@@ -455,6 +591,10 @@ public class MainActivity extends FragmentActivity {
             super.onResume();
         }
 
+        public void requestUpdateView() {
+            mOnUpdateViewListener.onUpdateView();
+        }
+
         protected EditText getEditText(View view, int id) {
             return (EditText)view.findViewById(id);
         }
@@ -466,10 +606,6 @@ public class MainActivity extends FragmentActivity {
         protected void showToast(String msg) {
             Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
             Log.i("nexec-demo", msg);
-        }
-
-        protected void requestUpdateView() {
-            mOnUpdateViewListener.onUpdateView();
         }
     }
 
@@ -696,6 +832,11 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    private interface MenuProc {
+
+        public void run();
+    }
+
     private enum Key {
         Permissions
     }
@@ -717,11 +858,18 @@ public class MainActivity extends FragmentActivity {
 
     // helpers
     private NexecClient mNexecClient;
+    private SparseArray<MenuProc> mMenuProcs;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        mMenuProcs.get(item.getItemId()).run();
         return true;
     }
 
@@ -737,6 +885,7 @@ public class MainActivity extends FragmentActivity {
 
         mNexecClient = new NexecClient(this);
         mNexecClient.setOnFinishListener(new OnFinishListener());
+        setUpMenu();
 
         ViewPager pager = (ViewPager)findViewById(R.id.pager);
         pager.setAdapter(new Adapter(getSupportFragmentManager()));
@@ -883,6 +1032,23 @@ public class MainActivity extends FragmentActivity {
     private void setUpRunFragment(RunFragment runFragment) {
         runFragment.setOnRunListener(new RunOnRunListener());
         mRunFragment = runFragment;
+    }
+
+    private void setUpMenu() {
+        mMenuProcs = new SparseArray<MenuProc>();
+        mMenuProcs.put(R.id.action_read_preset, new ReadPresetProc());
+    }
+
+    private void updateView(BaseFragment fragment) {
+        if ((fragment != null) && fragment.isResumed()) {
+            fragment.requestUpdateView();
+        }
+    }
+
+    private void updateView() {
+        updateView(mHostFragment);
+        updateView(mCommandFragment);
+        updateView(mPermissionFragment);
     }
 }
 
