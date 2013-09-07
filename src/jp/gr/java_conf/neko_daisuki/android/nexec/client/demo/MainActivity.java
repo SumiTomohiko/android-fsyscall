@@ -300,10 +300,8 @@ public class MainActivity extends FragmentActivity {
 
             private LayoutInflater mInflater;
 
-            public Adapter() {
-                Activity activity = getActivity();
-                String name = Context.LAYOUT_INFLATER_SERVICE;
-                mInflater = (LayoutInflater)activity.getSystemService(name);
+            public Adapter(LayoutInflater inflater) {
+                mInflater = inflater;
             }
 
             public View getView(int position,
@@ -358,7 +356,7 @@ public class MainActivity extends FragmentActivity {
             View view = inflater.inflate(R.layout.fragment_permission, null);
             int listId = R.id.permission_list;
             ListView listView = (ListView)view.findViewById(listId);
-            mAdapter = new Adapter();
+            mAdapter = new Adapter(inflater);
             listView.setAdapter(mAdapter);
 
             View addButton = view.findViewById(R.id.add_button);
