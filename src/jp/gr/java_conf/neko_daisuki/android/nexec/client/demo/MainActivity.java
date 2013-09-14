@@ -4,7 +4,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import android.app.Activity;
 import android.app.DialogFragment;
@@ -222,12 +226,6 @@ public class MainActivity extends FragmentActivity {
             //showToast("HostFragment.onPause()");
         }
 
-        public void onResume() {
-            super.onResume();
-            //showToast("HostFragment.onResume()");
-            requestUpdateView();
-        }
-
         public void onStop() {
             super.onStop();
             //showToast("HostFragment.onStop()");
@@ -299,12 +297,6 @@ public class MainActivity extends FragmentActivity {
             //showToast("CommandFragment.onPause()");
         }
 
-        public void onResume() {
-            super.onResume();
-            //showToast("CommandFragment.onResume()");
-            requestUpdateView();
-        }
-
         public void onStop() {
             super.onStop();
             //showToast("CommandFragment.onStop()");
@@ -341,6 +333,103 @@ public class MainActivity extends FragmentActivity {
 
         public String getCommand() {
             return getEditString(mArgsEdit);
+        }
+    }
+
+    public static class EnvironmentFragment extends BaseFragment {
+
+        private class Adapter extends BaseAdapter {
+
+            private LayoutInflater mInflater;
+
+            public Adapter(LayoutInflater inflater) {
+                mInflater = inflater;
+            }
+
+            public View getView(int position,
+                                View convertView,
+                                ViewGroup parent) {
+                int layoutId = R.layout.row_environment;
+                View view = mInflater.inflate(layoutId, parent, false);
+                int nameId = R.id.name_text;
+                TextView nameText = (TextView)view.findViewById(nameId);
+                nameText.setText(mEnv.getName(position));
+                int valueId = R.id.value_text;
+                TextView valueText = (TextView)view.findViewById(valueId);
+                valueText.setText(mEnv.getValue(position));
+                return view;
+            }
+
+            public long getItemId(int position) {
+                return 0;
+            }
+
+            public Object getItem(int position) {
+                return null;
+            }
+
+            public int getCount() {
+                return mEnv != null ? mEnv.size() : 0;
+            }
+        }
+
+        private class AddButtonOnClickListener implements OnClickListener {
+
+            private EditText mNameEdit;
+            private EditText mValueEdit;
+
+            public AddButtonOnClickListener(EditText nameEdit,
+                                            EditText valueEdit) {
+                mNameEdit = nameEdit;
+                mValueEdit = valueEdit;
+            }
+
+            public void onClick(View view) {
+                String name = mNameEdit.getEditableText().toString();
+                if (name.equals("")) {
+                    return;
+                }
+                String value = mValueEdit.getEditableText().toString();
+
+                mEnv.put(name, value);
+                mAdapter.notifyDataSetChanged();
+            }
+        }
+
+        private EnvironmentVariables mEnv;
+        private BaseAdapter mAdapter;
+
+        public View onCreateView(LayoutInflater inflater,
+                                 ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View view = inflater.inflate(R.layout.fragment_environment, null);
+            int listId = R.id.environment_list;
+            ListView listView = (ListView)view.findViewById(listId);
+            mAdapter = new Adapter(inflater);
+            listView.setAdapter(mAdapter);
+
+            View addButton = view.findViewById(R.id.add_button);
+            OnClickListener listener = new AddButtonOnClickListener(
+                    (EditText)view.findViewById(R.id.name_edit),
+                    (EditText)view.findViewById(R.id.value_edit));
+            addButton.setOnClickListener(listener);
+
+            return view;
+        }
+
+        public void onResume() {
+            super.onResume();
+            updateView();
+        }
+
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            ((MainActivity)activity).setUpEnvironmentFragment(this);
+        }
+
+        public void setEnvironmentVariables(EnvironmentVariables env) {
+            mEnv = env;
+            mAdapter.notifyDataSetChanged();
         }
     }
 
@@ -420,12 +509,6 @@ public class MainActivity extends FragmentActivity {
         public void onPause() {
             super.onPause();
             //showToast("PermissionFragment.onPause()");
-        }
-
-        public void onResume() {
-            super.onResume();
-            //showToast("PermissionFragment.onResume()");
-            requestUpdateView();
         }
 
         public void onStop() {
@@ -651,9 +734,10 @@ public class MainActivity extends FragmentActivity {
 
         public void onResume() {
             super.onResume();
+            updateView();
         }
 
-        public void requestUpdateView() {
+        public void updateView() {
             mOnUpdateViewListener.onUpdateView();
         }
 
@@ -688,6 +772,14 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    private class EnvironmentOnUpdateViewListener
+            implements BaseFragment.OnUpdateViewListener {
+
+        public void onUpdateView() {
+            mEnvironmentFragment.setEnvironmentVariables(mEnv);
+        }
+    }
+
     private class PermissionOnUpdateViewListener
             implements BaseFragment.OnUpdateViewListener {
 
@@ -698,6 +790,8 @@ public class MainActivity extends FragmentActivity {
 
     private class PresetReadHelper {
 
+        private String mName;
+        private String mValue;
         private Permission mPermission;
 
         private class MainHandler implements PresetReader.MainHandler {
@@ -724,9 +818,11 @@ public class MainActivity extends FragmentActivity {
             }
 
             public void onBeginEnvironment() {
+                mName = mValue = "";
             }
 
             public void onEndEnvironment() {
+                mEnv.put(mName, mValue);
             }
 
             public void onReadHost(String host) {
@@ -746,9 +842,21 @@ public class MainActivity extends FragmentActivity {
             }
         }
 
+        private class PairHandler implements PresetReader.PairHandler {
+
+            public void onReadName(String name) {
+                mName = name;
+            }
+
+            public void onReadValue(String value) {
+                mValue = value;
+            }
+        }
+
         public void read(String path) throws IOException {
             PresetReader.Handlers handlers = new PresetReader.Handlers();
             handlers.mainHandler = new MainHandler();
+            handlers.pairHandler = new PairHandler();
             handlers.permissionHandler = new PermissionHandler();
             new PresetReader(handlers).read(path);
         }
@@ -778,6 +886,7 @@ public class MainActivity extends FragmentActivity {
         private Page[] mPages = new Page[] {
             new Page("Host", new HostFragment()),
             new Page("Command", new CommandFragment()),
+            new Page("Environment", new EnvironmentFragment()),
             new Page("Permission", new PermissionFragment()),
             new Page("Run", new RunFragment())
         };
@@ -835,6 +944,46 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    private static class EnvironmentVariables
+            implements Iterable<Map.Entry<String, String>> {
+
+        private Map<String, String> mEnv;
+        private String[] mKeys; // Cache
+
+        public EnvironmentVariables() {
+            mEnv = new HashMap<String, String>();
+        }
+
+        public void put(String name, String value) {
+            mEnv.put(name, value);
+            updateCache();
+        }
+
+        public void clear() {
+            mEnv.clear();
+        }
+
+        public int size() {
+            return mEnv.size();
+        }
+
+        public String getName(int i) {
+            return mKeys[i];
+        }
+
+        public String getValue(int i) {
+            return mEnv.get(getName(i));
+        }
+
+        public Iterator<Map.Entry<String, String>> iterator() {
+            return mEnv.entrySet().iterator();
+        }
+
+        private void updateCache() {
+            mKeys = mEnv.keySet().toArray(new String[0]);
+        }
+    }
+
     private static class Permissions {
 
         private List<Permission> mList;
@@ -882,6 +1031,9 @@ public class MainActivity extends FragmentActivity {
             settings.host = mHost;
             settings.port = Integer.parseInt(mPort);
             settings.args = mCommand.split("\\s");
+            for (Map.Entry<String, String> entry: mEnv) {
+                settings.addEnvironment(entry.getKey(), entry.getValue());
+            }
             settings.files = mPermissions.listPatterns();
 
             EditText stdout = mRunFragment.getStdoutEditText();
@@ -911,11 +1063,13 @@ public class MainActivity extends FragmentActivity {
     private String mHost = "neko-daisuki.ddo.jp";
     private String mPort = "57005";
     private String mCommand = "echo foobarbazquux";
+    private EnvironmentVariables mEnv = new EnvironmentVariables();
     private Permissions mPermissions = new Permissions();
 
     // views
     private HostFragment mHostFragment;
     private CommandFragment mCommandFragment;
+    private EnvironmentFragment mEnvironmentFragment;
     private PermissionFragment mPermissionFragment;
     private RunFragment mRunFragment;
 
@@ -1016,8 +1170,17 @@ public class MainActivity extends FragmentActivity {
         updateDocument();
 
         PresetWriter.Main main = new PresetWriter.Main();
+        main.host = mHost;
+        main.port = mPort;
         main.currentDirectory = "/";
         main.command = mCommand;
+        main.environments = new ArrayList<PresetWriter.Pair>();
+        for (Map.Entry<String, String> entry: mEnv) {
+            PresetWriter.Pair pair = new PresetWriter.Pair();
+            pair.name = entry.getKey();
+            pair.value = entry.getValue();
+            main.environments.add(pair);
+        }
         main.links = new ArrayList<PresetWriter.Link>();
         main.permissions = new ArrayList<PresetWriter.Permission>();
         for (Permission perm: mPermissions.toList()) {
@@ -1025,9 +1188,6 @@ public class MainActivity extends FragmentActivity {
             p.pattern = perm.getPattern();
             main.permissions.add(p);
         }
-        main.environments = new ArrayList<PresetWriter.Pair>();
-        main.host = mHost;
-        main.port = mPort;
 
         try {
             PresetWriter.write(path, main);
@@ -1039,6 +1199,7 @@ public class MainActivity extends FragmentActivity {
     }
 
     private void readPreset(String path) {
+        mEnv.clear();
         mPermissions.clear();
         try {
             new PresetReadHelper().read(path);
@@ -1072,31 +1233,33 @@ public class MainActivity extends FragmentActivity {
         Toast.makeText(this, txt, Toast.LENGTH_LONG).show();
     }
 
-    private void setUpHostFragment(HostFragment hostFragment) {
-        hostFragment.setOnUpdateViewListener(new HostOnUpdateViewListener());
-        hostFragment.setOnUpdateDocumentListener(
+    private void setUpHostFragment(HostFragment fragment) {
+        fragment.setOnUpdateViewListener(new HostOnUpdateViewListener());
+        fragment.setOnUpdateDocumentListener(
                 new HostOnUpdateDocumentListener());
-        mHostFragment = hostFragment;
+        mHostFragment = fragment;
     }
 
-    private void setUpCommandFragment(CommandFragment commandFragment) {
-        commandFragment.setOnUpdateViewListener(
-                new CommandOnUpdateViewListener());
-        commandFragment.setOnUpdateDocumentListener(
+    private void setUpCommandFragment(CommandFragment fragment) {
+        fragment.setOnUpdateViewListener(new CommandOnUpdateViewListener());
+        fragment.setOnUpdateDocumentListener(
                 new CommandOnUpdateDocumentListener());
-        mCommandFragment = commandFragment;
+        mCommandFragment = fragment;
     }
 
-    private void setUpPermissionFragment(
-            PermissionFragment permissionFragment) {
-        permissionFragment.setOnUpdateViewListener(
-                new PermissionOnUpdateViewListener());
-        mPermissionFragment = permissionFragment;
+    private void setUpPermissionFragment(PermissionFragment fragment) {
+        fragment.setOnUpdateViewListener(new PermissionOnUpdateViewListener());
+        mPermissionFragment = fragment;
     }
 
-    private void setUpRunFragment(RunFragment runFragment) {
-        runFragment.setOnRunListener(new RunOnRunListener());
-        mRunFragment = runFragment;
+    private void setUpRunFragment(RunFragment fragment) {
+        fragment.setOnRunListener(new RunOnRunListener());
+        mRunFragment = fragment;
+    }
+
+    private void setUpEnvironmentFragment(EnvironmentFragment fragment) {
+        fragment.setOnUpdateViewListener(new EnvironmentOnUpdateViewListener());
+        mEnvironmentFragment = fragment;
     }
 
     private void setUpMenu() {
@@ -1107,13 +1270,14 @@ public class MainActivity extends FragmentActivity {
 
     private void updateView(BaseFragment fragment) {
         if ((fragment != null) && fragment.isResumed()) {
-            fragment.requestUpdateView();
+            fragment.updateView();
         }
     }
 
     private void updateView() {
         updateView(mHostFragment);
         updateView(mCommandFragment);
+        updateView(mEnvironmentFragment);
         updateView(mPermissionFragment);
     }
 

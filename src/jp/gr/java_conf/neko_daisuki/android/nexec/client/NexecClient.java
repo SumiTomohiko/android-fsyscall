@@ -23,6 +23,17 @@ public class NexecClient {
 
     public static class Settings {
 
+        private static class Pair {
+
+            private String name;
+            private String value;
+
+            public Pair(String name, String value) {
+                this.name = name;
+                this.value = value;
+            }
+        }
+
         private static class Link {
 
             private String dest;
@@ -37,15 +48,21 @@ public class NexecClient {
         public String host;
         public int port;
         public String[] args;
+        private List<Pair> environment;
         public String[] files;
         private List<Link> links;
 
         public Settings() {
+            environment = new ArrayList<Pair>();
             links = new ArrayList<Link>();
         }
 
         public void addLink(String dest, String src) {
             links.add(new Link(dest, src));
+        }
+
+        public void addEnvironment(String name, String value) {
+            environment.add(new Pair(name, value));
         }
     }
 
@@ -263,6 +280,7 @@ public class NexecClient {
         intent.putExtra("HOST", settings.host);
         intent.putExtra("PORT", settings.port);
         intent.putExtra("ARGS", settings.args);
+        intent.putExtra("ENV", encodeEnvironment(settings.environment));
         intent.putExtra("FILES", settings.files);
         intent.putExtra("LINKS", encodeLinks(settings.links));
         mActivity.startActivityForResult(intent, requestCode);
@@ -291,25 +309,31 @@ public class NexecClient {
         dest.putExtra(key, src.getStringExtra(key));
     }
 
-    private String[] encodeLinks(List<Settings.Link> links) {
+    private String[] encodeEnvironment(List<Settings.Pair> environment) {
         List<String> l = new LinkedList<String>();
-        for (Settings.Link link: links) {
-            l.add(encodeLink(link));
+        for (Settings.Pair pair: environment) {
+            l.add(encodePair(pair.name, pair.value));
         }
         return l.toArray(new String[0]);
     }
 
-    private String encodeLink(Settings.Link link) {
-        String dest = escapeLinkPath(link.dest);
-        String src = escapeLinkPath(link.src);
-        return String.format("%s:%s", dest, src);
+    private String[] encodeLinks(List<Settings.Link> links) {
+        List<String> l = new LinkedList<String>();
+        for (Settings.Link link: links) {
+            l.add(encodePair(link.dest, link.src));
+        }
+        return l.toArray(new String[0]);
     }
 
-    private String escapeLinkPath(String path) {
+    private String encodePair(String name, String value) {
+        return String.format("%s:%s", escape(name), escape(value));
+    }
+
+    private String escape(String s) {
         StringBuilder buffer = new StringBuilder();
-        int len = path.length();
+        int len = s.length();
         for (int i = 0; i < len; i++) {
-            char c = path.charAt(i);
+            char c = s.charAt(i);
             buffer.append((c != ':') && (c != '\\') ? "" : "\\").append(c);
         }
         return buffer.toString();
