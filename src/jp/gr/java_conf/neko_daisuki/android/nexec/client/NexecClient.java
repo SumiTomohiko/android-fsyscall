@@ -167,8 +167,7 @@ public class NexecClient {
                 mUnbindProcedure.unbind();
                 mUnbindProcedure = new FakeUnbindProcedure();
                 mNexecClient.mTimer.cancel();
-                mNexecClient.mOnFinishListener.onFinish();
-                mNexecClient.mOnFinishListener = mNexecClient.mFakeOnFinishListener;
+                mNexecClient.mOnFinishProc.run();
             }
         }
 
@@ -178,11 +177,14 @@ public class NexecClient {
 
         public IncomingHandler(NexecClient nexecClient) {
             mNexecClient = nexecClient;
-            mUnbindProcedure = new TrueUnbindProcedure();
             mHandlers = new SparseArray<MessageHandler>();
             mHandlers.put(MessageWhat.STDOUT, new StdoutHandler());
             mHandlers.put(MessageWhat.STDERR, new StderrHandler());
             mHandlers.put(MessageWhat.FINISHED, new FinishedHandler());
+        }
+
+        public void prepare() {
+            mUnbindProcedure = new TrueUnbindProcedure();
         }
 
         public void handleMessage(Message msg) {
@@ -235,10 +237,30 @@ public class NexecClient {
         }
     }
 
+    private interface OnFinishProc {
+
+        public void run();
+    }
+
+    private class TrueOnFinishProc implements OnFinishProc {
+
+        public void run() {
+            mOnFinishListener.onFinish();
+            mOnFinishProc = new FakeOnFinishProc();
+        }
+    }
+
+    private class FakeOnFinishProc implements OnFinishProc {
+
+        public void run() {
+        }
+    }
+
     private static final String PACKAGE = "jp.gr.java_conf.neko_daisuki.android.nexec.client";
 
     private Activity mActivity;
     private Connection mConnection;
+    private IncomingHandler mHandler;
     private Messenger mService;     // Messenger to the service.
     private Messenger mMessenger;   // Messenger from the service.
     private Timer mTimer;
@@ -248,11 +270,13 @@ public class NexecClient {
     private OnGetLineListener mFakeOnGetLineListener;
     private OnFinishListener mOnFinishListener;
     private OnFinishListener mFakeOnFinishListener;
+    private OnFinishProc mOnFinishProc;
 
     public NexecClient(Activity activity) {
         mActivity = activity;
         mConnection = new Connection();
-        mMessenger = new Messenger(new IncomingHandler(this));
+        mHandler = new IncomingHandler(this);
+        mMessenger = new Messenger(mHandler);
 
         mFakeOnGetLineListener = new FakeOnGetLineListener();
         mStdoutOnGetLineListener = mFakeOnGetLineListener;
@@ -286,10 +310,14 @@ public class NexecClient {
     }
 
     public void execute(Intent data) {
+        mHandler.prepare();
+        mOnFinishProc = new TrueOnFinishProc();
+
         Intent intent = new Intent();
         intent.setClassName(PACKAGE, getClassName("MainService"));
         copySessionId(intent, data);
         mActivity.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
         mPollingTask = new FakePollingTask();
         startTimer();
     }
