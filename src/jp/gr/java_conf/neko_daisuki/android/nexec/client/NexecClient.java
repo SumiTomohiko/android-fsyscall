@@ -177,8 +177,6 @@ public class NexecClient {
         private SparseArray<MessageHandler> mHandlers;
 
         public IncomingHandler(NexecClient nexecClient) {
-            super();
-
             mNexecClient = nexecClient;
             mUnbindProcedure = new TrueUnbindProcedure();
             mHandlers = new SparseArray<MessageHandler>();
