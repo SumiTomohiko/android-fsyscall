@@ -141,6 +141,7 @@ public class NexecClient {
                     return;
                 }
                 callOnGetLineListener(s + "\n");
+                mOutput.clear();
             }
 
             protected abstract void callOnGetLineListener(String line);
