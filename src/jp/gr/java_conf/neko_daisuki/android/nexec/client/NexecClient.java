@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.os.Handler;
 import android.app.Activity;
-import android.util.SparseArray;
-import android.content.Context;
 import android.content.ComponentName;
+import android.content.Context;
+import android.os.Handler;
+import android.util.SparseArray;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
