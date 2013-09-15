@@ -456,6 +456,21 @@ public class MainActivity extends FragmentActivity {
 
         private class Adapter extends BaseAdapter {
 
+            private class DeleteButtonOnClickListener
+                    implements OnClickListener {
+
+                private int mPosition;
+
+                public DeleteButtonOnClickListener(int position) {
+                    mPosition = position;
+                }
+
+                public void onClick(View view) {
+                    mPermissions.remove(mPosition);
+                    notifyDataSetChanged();
+                }
+            }
+
             private LayoutInflater mInflater;
 
             public Adapter(LayoutInflater inflater) {
@@ -470,6 +485,9 @@ public class MainActivity extends FragmentActivity {
                 int textId = R.id.pattern_text;
                 TextView patternText = (TextView)view.findViewById(textId);
                 patternText.setText(mPermissions.get(position).getPattern());
+                View deleteButton = view.findViewById(R.id.delete_button);
+                deleteButton.setOnClickListener(
+                        new DeleteButtonOnClickListener(position));
                 return view;
             }
 
@@ -1022,6 +1040,10 @@ public class MainActivity extends FragmentActivity {
 
         public Permission get(int position) {
             return mList.get(position);
+        }
+
+        public void remove(int position) {
+            mList.remove(position);
         }
 
         public void clear() {
