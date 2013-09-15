@@ -340,6 +340,21 @@ public class MainActivity extends FragmentActivity {
 
         private class Adapter extends BaseAdapter {
 
+            private class DeleteButtonOnClickListener
+                    implements OnClickListener {
+
+                private String mName;
+
+                public DeleteButtonOnClickListener(String name) {
+                    mName = name;
+                }
+
+                public void onClick(View view) {
+                    mEnv.remove(mName);
+                    notifyDataSetChanged();
+                }
+            }
+
             private LayoutInflater mInflater;
 
             public Adapter(LayoutInflater inflater) {
@@ -351,12 +366,16 @@ public class MainActivity extends FragmentActivity {
                                 ViewGroup parent) {
                 int layoutId = R.layout.row_environment;
                 View view = mInflater.inflate(layoutId, parent, false);
+                String name = mEnv.getName(position);
                 int nameId = R.id.name_text;
                 TextView nameText = (TextView)view.findViewById(nameId);
-                nameText.setText(mEnv.getName(position));
+                nameText.setText(name);
                 int valueId = R.id.value_text;
                 TextView valueText = (TextView)view.findViewById(valueId);
                 valueText.setText(mEnv.getValue(position));
+                View deleteButton = view.findViewById(R.id.delete_button);
+                deleteButton.setOnClickListener(
+                        new DeleteButtonOnClickListener(name));
                 return view;
             }
 
@@ -956,6 +975,11 @@ public class MainActivity extends FragmentActivity {
 
         public void put(String name, String value) {
             mEnv.put(name, value);
+            updateCache();
+        }
+
+        public void remove(String name) {
+            mEnv.remove(name);
             updateCache();
         }
 
