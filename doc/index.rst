@@ -44,6 +44,7 @@ The following commands are available now.
 
 * echo
 * ffmpeg
+* python3.3
 
 But this application has any functions to allow file access yet. So the command
 of ffmpeg is almost meaningless. Please give "echo" and its arguments as you
