@@ -1,8 +1,15 @@
 .settings
 bin
 doc/android-nexec-client-thumb.png
+doc/command_page-thumb.png
+doc/environment_page-thumb.png
+doc/give_a_preset_name-thumb.png
+doc/host_page-thumb.png
 doc/index.html
+doc/permission_page-thumb.png
+doc/run_page-thumb.png
 doc/screenshot-thumb.png
+doc/select_a_preset-thumb.png
 doc/stdout-thumb.png
 gen
 ic_launcher-web.png

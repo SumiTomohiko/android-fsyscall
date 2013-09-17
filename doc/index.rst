@@ -21,6 +21,30 @@ This application is available at `Google play`_.
 
 .. _Google play: https://play.google.com/store/apps/details?id=jp.gr.java_conf.neko_daisuki.android.nexec.client.demo
 
+Screenshots
+===========
+
+.. image:: host_page-thumb.png
+    :target: host_page.png
+
+.. image:: command_page-thumb.png
+    :target: command_page.png
+
+.. image:: environment_page-thumb.png
+    :target: environment_page.png
+
+.. image:: permission_page-thumb.png
+    :target: permission_page.png
+
+.. image:: run_page-thumb.png
+    :target: run_page.png
+
+.. image:: select_a_preset-thumb.png
+    :target: select_a_preset.png
+
+.. image:: give_a_preset_name-thumb.png
+    :target: give_a_preset_name.png
+
 Tutorial
 ========
 

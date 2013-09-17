@@ -1,6 +1,9 @@
 
-THUMBNAILS=	screenshot-thumb.png android-nexec-client-thumb.png \
-		stdout-thumb.png
+THUMBNAILS=	screenshot-thumb.png android-nexec-client-thumb.png	\
+		stdout-thumb.png host_page-thumb.png			\
+		command_page-thumb.png environment_page-thumb.png	\
+		permission_page-thumb.png run_page-thumb.png		\
+		select_a_preset-thumb.png give_a_preset_name-thumb.png
 CONVERT=	convert -thumbnail 640x
 
 all: index.html $(THUMBNAILS)
@@ -25,3 +28,24 @@ android-nexec-client-thumb.png: android-nexec-client.png
 
 stdout-thumb.png: stdout.png
 	$(CONVERT) stdout.png stdout-thumb.png
+
+host_page-thumb.png: host_page.png
+	$(CONVERT) host_page.png host_page-thumb.png
+
+command_page-thumb.png: command_page.png
+	$(CONVERT) command_page.png command_page-thumb.png
+
+environment_page-thumb.png: environment_page.png
+	$(CONVERT) environment_page.png environment_page-thumb.png
+
+permission_page-thumb.png: permission_page.png
+	$(CONVERT) permission_page.png permission_page-thumb.png
+
+run_page-thumb.png: run_page.png
+	$(CONVERT) run_page.png run_page-thumb.png
+
+select_a_preset-thumb.png: select_a_preset.png
+	$(CONVERT) select_a_preset.png select_a_preset-thumb.png
+
+give_a_preset_name-thumb.png: give_a_preset_name.png
+	$(CONVERT) give_a_preset_name.png give_a_preset_name-thumb.png
