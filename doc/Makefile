@@ -4,9 +4,10 @@ THUMBNAILS=	screenshot-thumb.png android-nexec-client-thumb.png	\
 		command_page-thumb.png environment_page-thumb.png	\
 		permission_page-thumb.png run_page-thumb.png		\
 		select_a_preset-thumb.png give_a_preset_name-thumb.png
+PNGS=		nexec.png python.png you_can_think.png
 CONVERT=	convert -thumbnail 640x
 
-all: index.html $(THUMBNAILS)
+all: index.html $(THUMBNAILS) $(PNGS)
 
 .SUFFIXES: .rst .html .svg .png
 
@@ -15,7 +16,7 @@ all: index.html $(THUMBNAILS)
 	--strip-comments < $< > $@
 
 .svg.png:
-	inkscape --export-png $@ $<
+	inkscape --export-background transparent --export-png $@ $<
 
 clean:
 	rm -f *.html

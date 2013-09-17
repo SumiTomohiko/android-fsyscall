@@ -9,10 +9,33 @@ nexec client demo for Android
 Overview
 ========
 
-This is a sample Android application to try `nexec client for Android`_.
+This is an nexec_ client application for Android.
+
+nexec_ is a system to transfer system call requests via network. System calls
+which an application in a server requested are transfered to a client machine.
+
+.. image:: nexec.png
+
+With this mechanism, you can use applications in a server as same as these in
+your Android tablet. For example, if you execute Python in a server, the Python
+process can read/write files in your tablet.
+
+.. image:: python.png
+.. image:: you_can_think.png
+
+Of cource, this application keeps your tablet secure. Applications in a server
+cannot read/write files which you did not allow.
+
+.. note::
+    Strictly speaking, the above explanation is wrong. The nexec_ client
+    application for Android is `nexec client for Android`_, which is implemented
+    as a service. This application is one of user applications of that service.
+    Furthermore, the system to transfer system call requests is fsyscall_.
+    nexec_ is one usage of fsyscall_.
 
 .. _nexec client for Android:
     http://neko-daisuki.ddo.jp/~SumiTomohiko/android-nexec-client/index.html
+.. _fsyscall: http://neko-daisuki.ddo.jp/~SumiTomohiko/fsyscall/index.html
 
 Google play
 ===========

@@ -35,7 +35,7 @@ img {
     margin-right: auto;
 }
 
-div.attention {
+div.attention, div.note {
     border-style: dashed;
     margin: 16px 32px;
 }
