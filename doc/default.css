@@ -29,20 +29,9 @@ h1 > a, h2 > a {
     text-decoration: none;
 }
 
-img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-
 div.attention, div.note {
     border-style: dashed;
     margin: 16px 32px;
-}
-
-p img {
-    display: inline;
-    vertical-align: middle;
 }
 
 p {
@@ -66,6 +55,16 @@ li > ul, li > ol {
 
 a img {
     border-style: solid;
+}
+
+div.align-center {
+    font-family: monospace;
+    margin-bottom: 16px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 16px;
+    text-align: center;
+    width: 640px;
 }
 
 /**

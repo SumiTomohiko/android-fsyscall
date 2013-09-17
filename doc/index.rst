@@ -2,7 +2,8 @@
 nexec client demo for Android
 *****************************
 
-.. image:: icon.png
+.. figure:: icon.png
+    :align: center
 
 .. contents:: Table of contents
 
@@ -28,10 +29,12 @@ process can read/write files in your tablet. You will find that Python looks in 
 .. _Python: http://www.python.org/
 
 .. figure:: python.png
+    :align: center
 
     Python in a server
 
 .. figure:: python_looks_in_your_tablet.png
+    :align: center
 
     You will find that Python looks in your tablet.
 
@@ -39,6 +42,7 @@ Of cource, this application keeps your tablet secure. Applications in a server
 cannot read/write files which you did not allow.
 
 .. figure:: your_tablet_is_kept_secure.png
+    :align: center
 
     Your tablet is kept secure.
 
@@ -63,25 +67,32 @@ This application is available at `Google play`_.
 Screenshots
 ===========
 
-.. image:: host_page-thumb.png
+.. figure:: host_page-thumb.png
+    :align: center
     :target: host_page.png
 
-.. image:: command_page-thumb.png
+.. figure:: command_page-thumb.png
+    :align: center
     :target: command_page.png
 
-.. image:: environment_page-thumb.png
+.. figure:: environment_page-thumb.png
+    :align: center
     :target: environment_page.png
 
-.. image:: permission_page-thumb.png
+.. figure:: permission_page-thumb.png
+    :align: center
     :target: permission_page.png
 
-.. image:: run_page-thumb.png
+.. figure:: run_page-thumb.png
+    :align: center
     :target: run_page.png
 
-.. image:: select_a_preset-thumb.png
+.. figure:: select_a_preset-thumb.png
+    :align: center
     :target: select_a_preset.png
 
-.. image:: give_a_preset_name-thumb.png
+.. figure:: give_a_preset_name-thumb.png
+    :align: center
     :target: give_a_preset_name.png
 
 Tutorial
@@ -93,7 +104,8 @@ You must give the main screen with the following three settings.
 * Port number of the server
 * Command with arguments
 
-.. image:: screenshot-thumb.png
+.. figure:: screenshot-thumb.png
+    :align: center
     :target: screenshot.png
 
 neko-daisuki.ddo.jp is ready to try nexec_. You can use this as a server.
@@ -120,7 +132,8 @@ denies any undefined commands. For more information, refer
 When you finished, please push "Run". Then, `android-nexec-client`_ will show
 the requests of this demo application.
 
-.. image:: android-nexec-client-thumb.png
+.. figure:: android-nexec-client-thumb.png
+    :align: center
     :target: android-nexec-client.png
 
 .. _android-nexec-client: http://neko-daisuki.ddo.jp/~SumiTomohiko/android-nexec-client/index.html#confirmation-pages
@@ -129,7 +142,8 @@ If you push "Okey" to accept the requests, the demo application will connect
 with the server to run the command. If the command outputs stdout/stderr, you
 will see these in the textboxes.
 
-.. image:: stdout-thumb.png
+.. figure:: stdout-thumb.png
+    :align: center
     :target: stdout.png
 
 Anything else
