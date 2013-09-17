@@ -20,6 +20,9 @@ clean:
 doc:
 	@cd doc && make
 
+doc-clean:
+	@cd doc && $(MAKE) clean
+
 preset:
 	@yog $(YOG_OPTS) $(TOOLS_DIR)/preset.yog preset.txt src
 

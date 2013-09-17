@@ -13,15 +13,27 @@ This is an nexec_ client application for Android.
 
 nexec_ is a system to transfer system call requests via network. System calls
 which an application in a server requested are transfered to a client machine.
+The client machine performs the request, then it responses the result of the
+system call.
 
-.. image:: nexec.png
+.. figure:: nexec.png
+    :align: center
+
+    System call request and response
 
 With this mechanism, you can use applications in a server as same as these in
-your Android tablet. For example, if you execute Python in a server, the Python
-process can read/write files in your tablet.
+your Android tablet. For example, if you execute Python_ in a server, the Python
+process can read/write files in your tablet. You will find that Python looks in your tablet.
 
-.. image:: python.png
-.. image:: you_can_think.png
+.. _Python: http://www.python.org/
+
+.. figure:: python.png
+
+    Python in a server
+
+.. figure:: python_looks_in_your_tablet.png
+
+    You will find that Python looks in your tablet.
 
 Of cource, this application keeps your tablet secure. Applications in a server
 cannot read/write files which you did not allow.

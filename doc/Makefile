@@ -4,7 +4,7 @@ THUMBNAILS=	screenshot-thumb.png android-nexec-client-thumb.png	\
 		command_page-thumb.png environment_page-thumb.png	\
 		permission_page-thumb.png run_page-thumb.png		\
 		select_a_preset-thumb.png give_a_preset_name-thumb.png
-PNGS=		nexec.png python.png you_can_think.png
+PNGS=		nexec.png python.png python_looks_in_your_tablet.png
 CONVERT=	convert -thumbnail 640x
 
 all: index.html $(THUMBNAILS) $(PNGS)
@@ -19,7 +19,7 @@ all: index.html $(THUMBNAILS) $(PNGS)
 	inkscape --export-background transparent --export-png $@ $<
 
 clean:
-	rm -f *.html
+	rm -f *.html $(THUMBNAILS) $(PNGS)
 
 screenshot-thumb.png: screenshot.png
 	$(CONVERT) screenshot.png screenshot-thumb.png
