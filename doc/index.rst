@@ -38,6 +38,10 @@ process can read/write files in your tablet. You will find that Python looks in 
 Of cource, this application keeps your tablet secure. Applications in a server
 cannot read/write files which you did not allow.
 
+.. figure:: your_tablet_is_kept_secure.png
+
+    Your tablet is kept secure.
+
 .. note::
     Strictly speaking, the above explanation is wrong. The nexec_ client
     application for Android is `nexec client for Android`_, which is implemented

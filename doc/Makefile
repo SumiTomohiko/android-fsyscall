@@ -4,7 +4,8 @@ THUMBNAILS=	screenshot-thumb.png android-nexec-client-thumb.png	\
 		command_page-thumb.png environment_page-thumb.png	\
 		permission_page-thumb.png run_page-thumb.png		\
 		select_a_preset-thumb.png give_a_preset_name-thumb.png
-PNGS=		nexec.png python.png python_looks_in_your_tablet.png
+PNGS=		nexec.png python.png python_looks_in_your_tablet.png	\
+		your_tablet_is_kept_secure.png
 CONVERT=	convert -thumbnail 640x
 
 all: index.html $(THUMBNAILS) $(PNGS)
