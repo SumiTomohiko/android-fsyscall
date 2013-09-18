@@ -21,12 +21,6 @@ all: index.html $(THUMBNAILS) $(PNGS)
 clean:
 	rm -f *.html $(THUMBNAILS) $(PNGS)
 
-android-nexec-client-thumb.png: android-nexec-client.png
-	$(CONVERT) android-nexec-client.png android-nexec-client-thumb.png
-
-stdout-thumb.png: stdout.png
-	$(CONVERT) stdout.png stdout-thumb.png
-
 host_page-thumb.png: host_page.png
 	$(CONVERT) host_page.png host_page-thumb.png
 
