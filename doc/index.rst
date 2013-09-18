@@ -141,25 +141,12 @@ following links lead you to these pages.
 Anything else
 =============
 
-License
--------
+* License: `The MIT license`_
+* GitHub repository: https://github.com/SumiTomohiko/android-nexec-client-demo
+* Author: `Tomohiko Sumi`_
 
-nexec client demo is under `the MIT license`_.
-
-.. _the MIT license:
+.. _The MIT license:
     https://github.com/SumiTomohiko/android-nexec-client-demo/blob/master/COPYING.rst#mit-license
-
-GitHub repository
------------------
-
-GitHub repository of this is
-https://github.com/SumiTomohiko/android-nexec-client-demo.
-
-Author
-------
-
-The author of this is `Tomohiko Sumi`_.
-
 .. _Tomohiko Sumi: http://neko-daisuki.ddo.jp/~SumiTomohiko/index.html
 
 .. vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
