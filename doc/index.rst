@@ -12,6 +12,8 @@ Overview
 
 This is an nexec_ client application for Android.
 
+.. _nexec: http://neko-daisuki.ddo.jp/~SumiTomohiko/nexec/index.html
+
 nexec_ is a system to transfer system call requests via network. System calls
 which an application in a server requested are transfered to a client machine.
 The client machine performs the request, then it responses the result of the
@@ -123,56 +125,18 @@ This application is available at `Google play`_. Additionaly,
 .. _Google play: https://play.google.com/store/apps/details?id=jp.gr.java_conf.neko_daisuki.android.nexec.client.demo
 .. _nexec client for Android: https://play.google.com/store/apps/details?id=jp.gr.java_conf.neko_daisuki.android.nexec.client
 
-Tutorial
-========
+How to use / Tutorials
+======================
 
-You must give the main screen with the following three settings.
+The best way to know basic usage is reading tutorials. There are two tutorials.
+One is for the most simple command, echo. Another one is using Python. The
+following links lead you to these pages.
 
-* Name of the server
-* Port number of the server
-* Command with arguments
+* `echo`__
+* `Python`__
 
-.. figure:: screenshot-thumb.png
-    :align: center
-    :target: screenshot.png
-
-neko-daisuki.ddo.jp is ready to try nexec_. You can use this as a server.
-
-.. _nexec: http://neko-daisuki.ddo.jp/~SumiTomohiko/nexec/index.html
-
-There are no special reasons to change the port number from the default value
-(57005).
-
-The following commands are available now.
-
-* echo
-* ffmpeg
-* python3.3
-
-But this application has any functions to allow file access yet. So the command
-of ffmpeg is almost meaningless. Please give "echo" and its arguments as you
-like. Do not specify a path of a command such as "/bin/echo". An nexec_ server
-denies any undefined commands. For more information, refer
-`nexec documentation`_.
-
-.. _nexec documentation: http://neko-daisuki.ddo.jp/~SumiTomohiko/nexec/index.html#edit-etc-nexecd-conf
-
-When you finished, please push "Run". Then, `android-nexec-client`_ will show
-the requests of this demo application.
-
-.. figure:: android-nexec-client-thumb.png
-    :align: center
-    :target: android-nexec-client.png
-
-.. _android-nexec-client: http://neko-daisuki.ddo.jp/~SumiTomohiko/android-nexec-client/index.html#confirmation-pages
-
-If you push "Okey" to accept the requests, the demo application will connect
-with the server to run the command. If the command outputs stdout/stderr, you
-will see these in the textboxes.
-
-.. figure:: stdout-thumb.png
-    :align: center
-    :target: stdout.png
+.. __: tutorial/echo/index.html
+.. __: tutorial/python/index.html
 
 Anything else
 =============

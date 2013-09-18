@@ -1,9 +1,8 @@
 
-THUMBNAILS=	screenshot-thumb.png android-nexec-client-thumb.png	\
-		stdout-thumb.png host_page-thumb.png			\
-		command_page-thumb.png environment_page-thumb.png	\
-		permission_page-thumb.png run_page-thumb.png		\
-		select_a_preset-thumb.png give_a_preset_name-thumb.png
+THUMBNAILS=	host_page-thumb.png command_page-thumb.png		\
+		environment_page-thumb.png permission_page-thumb.png	\
+		run_page-thumb.png select_a_preset-thumb.png		\
+		give_a_preset_name-thumb.png
 PNGS=		nexec.png python.png python_looks_in_your_tablet.png	\
 		your_tablet_is_kept_secure.png
 CONVERT=	convert -thumbnail 640x
@@ -21,9 +20,6 @@ all: index.html $(THUMBNAILS) $(PNGS)
 
 clean:
 	rm -f *.html $(THUMBNAILS) $(PNGS)
-
-screenshot-thumb.png: screenshot.png
-	$(CONVERT) screenshot.png screenshot-thumb.png
 
 android-nexec-client-thumb.png: android-nexec-client.png
 	$(CONVERT) android-nexec-client.png android-nexec-client-thumb.png
