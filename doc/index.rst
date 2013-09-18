@@ -24,7 +24,8 @@ system call.
 
 With this mechanism, you can use applications in a server as same as these in
 your Android tablet. For example, if you execute Python_ in a server, the Python
-process can read/write files in your tablet. You will find that Python looks in your tablet.
+process can read/write files in your tablet. As a result, the Python process can
+run scripts in your tablet. You will find that Python looks in your tablet.
 
 .. _Python: http://www.python.org/
 
