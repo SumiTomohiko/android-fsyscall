@@ -64,29 +64,43 @@ Screenshots
     :align: center
     :target: host_page.png
 
+    Host page
+
 .. figure:: command_page-thumb.png
     :align: center
     :target: command_page.png
+
+    Command page
 
 .. figure:: environment_page-thumb.png
     :align: center
     :target: environment_page.png
 
+    Environment variables page
+
 .. figure:: permission_page-thumb.png
     :align: center
     :target: permission_page.png
+
+    Permission page
 
 .. figure:: run_page-thumb.png
     :align: center
     :target: run_page.png
 
+    Run page
+
 .. figure:: select_a_preset-thumb.png
     :align: center
     :target: select_a_preset.png
 
+    Select a preset dialog
+
 .. figure:: give_a_preset_name-thumb.png
     :align: center
     :target: give_a_preset_name.png
+
+    Give a preset name dialog
 
 How to install
 ==============
