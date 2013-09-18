@@ -49,21 +49,13 @@ cannot read/write files which you did not allow.
 
 .. note::
     Strictly speaking, the above explanation is wrong. The nexec_ client
-    application for Android is `nexec client for Android`_, which is implemented
-    as a service. This application is one of user applications of that service.
-    Furthermore, the system to transfer system call requests is fsyscall_.
-    nexec_ is one usage of fsyscall_.
+    application for Android is `nexec client for Android`__, which is
+    implemented as a service. This application is one of user applications of
+    that service. Furthermore, the system to transfer system call requests is
+    fsyscall_. nexec_ is one usage of fsyscall_.
 
-.. _nexec client for Android:
-    http://neko-daisuki.ddo.jp/~SumiTomohiko/android-nexec-client/index.html
+.. __: http://neko-daisuki.ddo.jp/~SumiTomohiko/android-nexec-client/index.html
 .. _fsyscall: http://neko-daisuki.ddo.jp/~SumiTomohiko/fsyscall/index.html
-
-Google play
-===========
-
-This application is available at `Google play`_.
-
-.. _Google play: https://play.google.com/store/apps/details?id=jp.gr.java_conf.neko_daisuki.android.nexec.client.demo
 
 Screenshots
 ===========
@@ -95,6 +87,27 @@ Screenshots
 .. figure:: give_a_preset_name-thumb.png
     :align: center
     :target: give_a_preset_name.png
+
+How to install
+==============
+
+This application is available at `Google play`_. Additionaly,
+`nexec client for Android`_ is required. It provides a core service for nexec_.
+
+.. figure:: demo_googleplay.png
+    :align: center
+    :target: `Google play`_
+
+    Google play page of this application
+
+.. figure:: core_googleplay.png
+    :align: center
+    :target: `nexec client for Android`_
+
+    Google play page of nexec client for Android
+
+.. _Google play: https://play.google.com/store/apps/details?id=jp.gr.java_conf.neko_daisuki.android.nexec.client.demo
+.. _nexec client for Android: https://play.google.com/store/apps/details?id=jp.gr.java_conf.neko_daisuki.android.nexec.client
 
 Tutorial
 ========
