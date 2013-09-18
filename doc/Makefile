@@ -7,7 +7,12 @@ PNGS=		nexec.png python.png python_looks_in_your_tablet.png	\
 		your_tablet_is_kept_secure.png
 CONVERT=	convert -thumbnail 640x
 
-all: index.html $(THUMBNAILS) $(PNGS)
+all: index.html $(THUMBNAILS) $(PNGS) recurse
+
+.PHONY: recurse
+
+recurse:
+	@cd tutorial && $(MAKE)
 
 .SUFFIXES: .rst .html .svg .png
 
