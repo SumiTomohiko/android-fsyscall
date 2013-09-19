@@ -12,7 +12,9 @@ all: index.html $(THUMBNAILS) $(PNGS) recurse
 .PHONY: recurse
 
 recurse:
+	@echo "=== enter tutorial ==="
 	@cd tutorial && $(MAKE)
+	@echo "=== exit tutorial ==="
 
 .SUFFIXES: .rst .html .svg .png
 
