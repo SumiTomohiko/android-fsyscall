@@ -20,13 +20,13 @@ This is a tutorial for `nexec client demo for Android`_ using `Python`_.
 * how to give a command
 * how to see output
 
-In addition to those, this tutorial explains
+In addition to those, this tutorial explains:
 
 * how to give environment variables to a command
 * how to allow a command to read/write files in your tablet
 
-Outline
-=======
+Outline of this tutorial
+========================
 
 This tutorial makes and uses a very simple Python script -- cat.py. This script
 reads a file in your tablet to print contents in it to standard output. cat.py
@@ -96,9 +96,8 @@ command is::
     :align: center
     :target: command_final.png
 
-YOU MUST GIVE ABSOLUTE PATHES!! Because the current version of the application
-does not handle the idea of "current directory" (It will be fixed in the
-future).
+PLEASE GIVE ABSOLUTE PATHES!! Because the current version of the application
+does not handle "current directory" (It will be fixed in the future).
 
 Giving an environment variable to the Python process
 ====================================================

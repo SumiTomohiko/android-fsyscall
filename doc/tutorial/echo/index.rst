@@ -7,19 +7,17 @@ nexec client demo for Android -- echo tutorial
 Overview
 ========
 
-This is a tutorial of `nexec client demo for Android`_.
-
-.. _nexec client demo for Android: ../../index.html
-
-This tutorial describes the most basic usage of the application. You will
-understand the following three items with reading this page.
+This is a tutorial of `nexec client demo for Android`_. This tutorial explains
+the most basic usage of the application. You will know with reading this page:
 
 * how to connect with a server
 * how to give a command
 * how to see output of a command
 
-Outline
-=======
+.. _nexec client demo for Android: ../../index.html
+
+Outline of this tutorial
+========================
 
 This tutorial handles "echo" command. As you know, it prints given command line
 arguments to standard output. In this tutorial, the command line argument is
@@ -31,8 +29,8 @@ last::
 Host page
 =========
 
-The first thing to do is passing a host setting. After starting the application,
-you will see the "Host" page.
+The first thing to do is passing a host address and a port number of an nexec
+server. After starting the application, you will see the "Host" page.
 
 .. figure:: host-thumb.png
     :align: center
@@ -98,6 +96,13 @@ page.
 
     Permission page
 
+.. note::
+    The role of the Environment page is giving environment variables to a
+    process. That of the Permission page is allowing a process to read/write
+    files in your tablet. `The tutorial of Python`_ uses these settings.
+
+.. _The tutorial of Python: ../python/index.html
+
 Run page
 ========
 
@@ -110,7 +115,7 @@ are to show standard output and standard error.
 
     Run page
 
-Please push the "Run" button. You will be requested to confirm the settings.
+Please push the "Run" button. You will see a confirmation screen.
 
 Confirmation
 ============
