@@ -69,6 +69,10 @@ div.align-center {
     width: 640px;
 }
 
+div.legend {
+    text-align: left;
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */
