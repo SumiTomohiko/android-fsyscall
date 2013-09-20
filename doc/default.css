@@ -74,7 +74,7 @@ div.legend {
     text-align: left;
 }
 
-p.admonition-title, p.caption {
+p.admonition-title, p.caption, p.topic-title {
     font-family: sans-serif;
 }
 
