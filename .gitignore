@@ -26,7 +26,6 @@ doc/tutorial/echo/host-thumb.png
 doc/tutorial/echo/index.html
 doc/tutorial/echo/permission-thumb.png
 doc/tutorial/echo/run-thumb.png
-doc/tutorial/echo/sorry-thumb.png
 doc/tutorial/echo/standard_output-thumb.png
 doc/tutorial/python/command_final-thumb.png
 doc/tutorial/python/command_initial-thumb.png
@@ -45,6 +44,7 @@ doc/tutorial/python/permission_add-thumb.png
 doc/tutorial/python/permission_final-thumb.png
 doc/tutorial/python/permission_initial-thumb.png
 doc/tutorial/python/run-thumb.png
+doc/tutorial/share/sorry-thumb.png
 doc/your_tablet_is_kept_secure.png
 gen
 ic_launcher-web.png

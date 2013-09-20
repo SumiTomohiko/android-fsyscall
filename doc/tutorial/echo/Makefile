@@ -5,7 +5,7 @@ THUMBNAILS=	host-thumb.png command_default-thumb.png		\
 		standard_output-thumb.png confirm_host-thumb.png	\
 		confirm_command-thumb.png confirm_environment-thumb.png	\
 		confirm_permission-thumb.png				\
-		confirm_redirection-thumb.png sorry-thumb.png
+		confirm_redirection-thumb.png
 THUMB_CMD=	convert -thumbnail 640x
 
 all: index.html $(THUMBNAILS)
@@ -51,6 +51,3 @@ confirm_permission-thumb.png: confirm_permission.png
 
 confirm_redirection-thumb.png: confirm_redirection.png
 	$(THUMB_CMD) confirm_redirection.png confirm_redirection-thumb.png
-
-sorry-thumb.png: sorry.png
-	$(THUMB_CMD) sorry.png sorry-thumb.png

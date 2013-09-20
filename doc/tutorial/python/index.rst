@@ -186,6 +186,8 @@ In this tutorial, ignore the "Redirection" page.
     :align: center
     :target: confirm_redirection.png
 
+.. include:: ../share/sorry.rst
+
 Push the "Okay" button. The core service will connect to the server and execute
 Python.
 

@@ -1,5 +1,5 @@
 
-SUBDIRS=	echo python
+SUBDIRS=	share echo python
 
 all:
 	@for dir in $(SUBDIRS);			\
