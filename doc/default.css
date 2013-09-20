@@ -31,6 +31,7 @@ h1 > a, h2 > a {
 
 div.attention, div.note {
     border-style: dashed;
+    border-width: 1px;
     margin: 16px 32px;
 }
 
