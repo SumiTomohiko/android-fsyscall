@@ -73,6 +73,10 @@ div.legend {
     text-align: left;
 }
 
+p.admonition-title, p.caption {
+    font-family: sans-serif;
+}
+
 /**
  * vim: tabstop=4 shiftwidth=4 expandtab softtabstop=4
  */
