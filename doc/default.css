@@ -33,10 +33,12 @@ div.attention, div.note {
     border-style: dashed;
     border-width: 1px;
     margin: 16px 32px;
+    padding: 16px;
 }
 
 p {
-    margin-left: 32px;
+    margin-left: 16px;
+    margin-right: 16px;
 }
 
 pre {
