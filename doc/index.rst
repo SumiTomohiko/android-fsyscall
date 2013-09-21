@@ -125,15 +125,28 @@ This application is available at `Google play`_. Additionaly,
 .. _Google play: https://play.google.com/store/apps/details?id=jp.gr.java_conf.neko_daisuki.android.nexec.client.demo
 .. _nexec client for Android: https://play.google.com/store/apps/details?id=jp.gr.java_conf.neko_daisuki.android.nexec.client
 
-How to use / Tutorials
-======================
+How to use
+==========
 
-The best way to know basic usage is reading tutorials. There are two tutorials.
-One is for the most simple command, echo. Another one is using Python. The
-following links lead you to these pages.
+Tutorials
+---------
 
-* `echo`__
-* `Python`__
+The best way to know usage is reading tutorials. There are two tutorials.
+
+The first one is on the most simple command, echo. This tutorial explains very
+basic usages, such as how to connect with a server, how to execute a command and
+how to see standard output.
+
+Another tutorial is using Python. This tutorial also describes the same things
+as that in the echo tutorial for readers to know all only with reading this
+tutorial (There are some duplicated descriptions). Moreover, this tutorial
+explains how to give environment variables and how to allow a process to
+read/write files in your tablet.
+
+The following links lead you to these pages.
+
+1. `echo`__
+2. `Python`__
 
 .. __: tutorial/echo/index.html
 .. __: tutorial/python/index.html
