@@ -92,17 +92,17 @@ Screenshots
 
     Run page
 
-.. figure:: select_a_preset-thumb.png
-    :align: center
-    :target: select_a_preset.png
-
-    Select a preset dialog
-
 .. figure:: give_a_preset_name-thumb.png
     :align: center
     :target: give_a_preset_name.png
 
     Give a preset name dialog
+
+.. figure:: select_a_preset-thumb.png
+    :align: center
+    :target: select_a_preset.png
+
+    Select a preset dialog
 
 How to install
 ==============
@@ -150,6 +150,31 @@ The following links lead you to these pages.
 
 .. __: tutorial/echo/index.html
 .. __: tutorial/python/index.html
+
+Writing/Reading a preset
+------------------------
+
+One set of configuration can be saved as a "preset". If you use some
+configurations well, you can switch one configuration to another one easily with
+reading a preset.
+
+The menu at the top right corner includes items to read/write a preset, "Read a
+preset..." and "Write a preset...".
+
+If you select "Write a preset...", the application asks a name of the preset.
+
+.. figure:: give_a_preset_name-thumb.png
+    :align: center
+    :target: give_a_preset_name.png
+
+The preset can be loaded with "Read a preset..." item. Push the "Read" button on
+the right side of a preset which you want to load.
+
+.. figure:: select_a_preset-thumb.png
+    :align: center
+    :target: select_a_preset.png
+
+The preset data file is in /sdcard/.nexec-demo directory.
 
 Anything else
 =============
