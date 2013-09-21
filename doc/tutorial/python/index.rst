@@ -191,6 +191,8 @@ In this tutorial, ignore the "Redirection" page.
 Push the "Okay" button. The core service will connect to the server and execute
 Python.
 
+.. include:: ../share/structure.rst
+
 Run
 ===
 
