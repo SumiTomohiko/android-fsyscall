@@ -50,8 +50,8 @@ cannot read/write files which you did not allow.
     Your tablet is kept secure.
 
 .. note::
-    Strictly speaking, the above explanation is wrong. The nexec_ client
-    application for Android is `nexec client for Android`__, which is
+    Strictly speaking, the above explanation is a little wrong. The nexec_
+    client application for Android is `nexec client for Android`__, which is
     implemented as a service. This application is one of user applications of
     that service. Furthermore, the system to transfer system call requests is
     fsyscall_. nexec_ is one usage of fsyscall_.
