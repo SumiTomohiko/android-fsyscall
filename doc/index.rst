@@ -60,8 +60,15 @@ cannot read/write files which you did not allow.
 .. _fsyscall: http://neko-daisuki.ddo.jp/~SumiTomohiko/fsyscall/index.html
 
 .. attention::
-    nexec_ is still instable and slow. The developer will do imcompatible
-    updates in the future.
+    1. nexec_ is still instable and slow.
+    2. The current version does not support all system calls. For example,
+       Python on nexec_ cannot list files in a directory, because
+       getdirentries(2) does not work in a slave. For more information, please
+       visit `"Supported system calls" section in the fsyscall's
+       documentation`__.
+    3. The developer will do imcompatible updates in the future.
+
+.. __: http://neko-daisuki.ddo.jp/~SumiTomohiko/fsyscall/index.html#supported-system-calls
 
 Screenshots
 ===========
