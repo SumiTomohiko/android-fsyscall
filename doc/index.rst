@@ -59,6 +59,10 @@ cannot read/write files which you did not allow.
 .. __: http://neko-daisuki.ddo.jp/~SumiTomohiko/android-nexec-client/index.html
 .. _fsyscall: http://neko-daisuki.ddo.jp/~SumiTomohiko/fsyscall/index.html
 
+.. attention::
+    nexec_ is still instable and slow. The developer will do imcompatible
+    updates in the future.
+
 Screenshots
 ===========
 
