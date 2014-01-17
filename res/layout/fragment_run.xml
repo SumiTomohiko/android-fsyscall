@@ -15,7 +15,7 @@
         android:layout_height="fill_parent"
         android:layout_weight="1"
         android:gravity="top"
-        android:editable="false"
+        android:inputType="none"
         android:typeface="monospace"/>
     <TextView
         android:layout_width="fill_parent"
@@ -27,7 +27,7 @@
         android:layout_height="fill_parent"
         android:layout_weight="1"
         android:gravity="top"
-        android:editable="false"
+        android:inputType="none"
         android:typeface="monospace"/>
     <Button
         android:id="@+id/run_button"

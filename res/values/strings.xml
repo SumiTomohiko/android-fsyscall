@@ -5,12 +5,14 @@
     <string name="action_read_preset">Read a preset&#8230;</string>
     <string name="action_write_preset">Write a preset&#8230;</string>
     <string name="label_add">Add</string>
+    <string name="label_command">Command</string>
     <string name="label_delete">Delete</string>
     <string name="label_host">Host</string>
     <string name="label_port">Port</string>
     <string name="label_positive">Okay</string>
     <string name="label_negative">Cancel</string>
     <string name="label_path_pattern">Path pattern</string>
+    <string name="label_preset_name">Preset name</string>
     <string name="label_read">Read</string>
     <string name="label_run">Run</string>
     <string name="label_stderr">Standard error</string>
