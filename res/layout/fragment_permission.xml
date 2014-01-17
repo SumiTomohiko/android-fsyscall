@@ -7,14 +7,14 @@
     <ListView
         android:id="@+id/permission_list"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="0dip"
         android:layout_weight="1"/>
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
         <EditText
             android:id="@+id/pattern_edit"
-            android:layout_width="fill_parent"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="@string/label_path_pattern"/>
