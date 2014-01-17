@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.Map;
 
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
@@ -1103,7 +1101,6 @@ public class MainActivity extends FragmentActivity {
     }
 
     private static final int REQUEST_CONFIRM = 0;
-    private static final String DEFAULT_PRESET_NAME = "default";
 
     // documents
     private String mHost = "neko-daisuki.ddo.jp";
