@@ -6,18 +6,18 @@
     android:layout_height="wrap_content"
     android:stretchColumns="1">
     <TableRow>
-        <TextView android:text="Host"/>
+        <TextView android:text="@string/label_host"/>
         <EditText
             android:id="@+id/host_edit"
             android:typeface="monospace"
-            android:text="neko-daisuki.ddo.jp"/>
+            android:text="@string/value_default_host"/>
     </TableRow>
     <TableRow>
-        <TextView android:text="Port"/>
+        <TextView android:text="@string/label_port"/>
         <EditText
             android:id="@+id/port_edit"
             android:typeface="monospace"
-            android:text="57005"/>
+            android:text="@string/value_default_port"/>
     </TableRow>
 </TableLayout>
 <!--
