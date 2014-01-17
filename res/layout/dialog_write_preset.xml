@@ -18,13 +18,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/label_positive"/>
+            android:text="@string/label_positive"
+            style="?android:attr/buttonBarStyle"/>
         <Button
             android:id="@+id/negative_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/label_negative"/>
+            android:text="@string/label_negative"
+            style="?android:attr/buttonBarStyle"/>
     </LinearLayout>
 </LinearLayout>
 <!--
