@@ -1082,13 +1082,6 @@ public class MainActivity extends FragmentActivity {
             }
             settings.files = mPermissions.listPatterns();
 
-            EditText stdout = mRunFragment.getStdoutEditText();
-            mNexecClient.setStdoutOnGetLineListener(
-                    new OnGetLineListener(stdout));
-            EditText stderr = mRunFragment.getStderrEditText();
-            mNexecClient.setStderrOnGetLineListener(
-                    new OnGetLineListener(stderr));
-
             mNexecClient.request(settings, REQUEST_CONFIRM);
         }
     }
@@ -1148,7 +1141,6 @@ public class MainActivity extends FragmentActivity {
         setContentView(R.layout.activity_main);
 
         mNexecClient = new NexecClient(this);
-        mNexecClient.setOnFinishListener(new OnFinishListener());
         setUpMenu();
         mReadDialogListner = new ReadPresetDialogListener();
         mWriteDialogListener = new WritePresetDialogListener();
@@ -1181,6 +1173,12 @@ public class MainActivity extends FragmentActivity {
         }
         mRunFragment.clear();
         mRunFragment.disableRunButton();
+
+        EditText stdout = mRunFragment.getStdoutEditText();
+        mNexecClient.setStdoutOnGetLineListener(new OnGetLineListener(stdout));
+        EditText stderr = mRunFragment.getStderrEditText();
+        mNexecClient.setStderrOnGetLineListener(new OnGetLineListener(stderr));
+        mNexecClient.setOnFinishListener(new OnFinishListener());
         mNexecClient.execute(data);
     }
 
