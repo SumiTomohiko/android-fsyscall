@@ -1,6 +1,8 @@
+*.log
 .classpath
 .settings
 bin
+core
 doc/android-nexec-client-thumb.png
 doc/command_page-thumb.png
 doc/environment_page-thumb.png
