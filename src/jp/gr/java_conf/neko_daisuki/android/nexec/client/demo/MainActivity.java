@@ -678,6 +678,59 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    private interface ActivityResultProc {
+
+        public void run(Intent data);
+    }
+
+    private class ActivityResultProcs {
+
+        private class NopProc implements ActivityResultProc {
+
+            @Override
+            public void run(Intent data) {
+            }
+        }
+
+        private SparseArray<ActivityResultProc> mProcs;
+        private ActivityResultProc mNopProc = new NopProc();
+
+        public ActivityResultProcs() {
+            mProcs = new SparseArray<ActivityResultProc>();
+        }
+
+        public void put(int requestCode, int resultCode,
+                        ActivityResultProc proc) {
+            mProcs.put(computeKey(requestCode, resultCode), proc);
+        }
+
+        public void run(int requestCode, int resultCode, Intent intent) {
+            int key = computeKey(requestCode, resultCode);
+            ActivityResultProc proc = mProcs.get(key);
+            (proc != null ? proc : mNopProc).run(intent);
+        }
+
+        private int computeKey(int requestCode, int resultCode) {
+            return (requestCode << 16) + resultCode;
+        }
+    }
+
+    private class ConfirmOkayProc implements ActivityResultProc {
+
+        @Override
+        public void run(Intent data) {
+            mRunFragment.clear();
+            mRunFragment.disableRunButton();
+
+            EditText stdout = mRunFragment.getStdoutEditText();
+            mNexecClient.setStdoutOnGetLineListener(new OnGetLineListener(stdout));
+            EditText stderr = mRunFragment.getStderrEditText();
+            mNexecClient.setStderrOnGetLineListener(new OnGetLineListener(stderr));
+            mNexecClient.setOnFinishListener(new OnFinishListener());
+            mNexecClient.execute(data);
+        }
+    }
+
     private class WritePresetDialogListener
             implements WritePresetDialog.Listener {
 
@@ -1116,6 +1169,7 @@ public class MainActivity extends FragmentActivity {
     private SparseArray<MenuProc> mMenuProcs;
     private ReadPresetDialogListener mReadDialogListner;
     private WritePresetDialog.Listener mWriteDialogListener;
+    private ActivityResultProcs mActivityResultProcs;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -1144,6 +1198,10 @@ public class MainActivity extends FragmentActivity {
         setUpMenu();
         mReadDialogListner = new ReadPresetDialogListener();
         mWriteDialogListener = new WritePresetDialogListener();
+        mActivityResultProcs = new ActivityResultProcs();
+        mActivityResultProcs.put(REQUEST_CONFIRM,
+                                 RESULT_OK,
+                                 new ConfirmOkayProc());
 
         ViewPager pager = (ViewPager)findViewById(R.id.pager);
         pager.setAdapter(new Adapter(getSupportFragmentManager()));
@@ -1168,18 +1226,7 @@ public class MainActivity extends FragmentActivity {
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if ((requestCode != REQUEST_CONFIRM) || (resultCode != RESULT_OK)) {
-            return;
-        }
-        mRunFragment.clear();
-        mRunFragment.disableRunButton();
-
-        EditText stdout = mRunFragment.getStdoutEditText();
-        mNexecClient.setStdoutOnGetLineListener(new OnGetLineListener(stdout));
-        EditText stderr = mRunFragment.getStderrEditText();
-        mNexecClient.setStderrOnGetLineListener(new OnGetLineListener(stderr));
-        mNexecClient.setOnFinishListener(new OnFinishListener());
-        mNexecClient.execute(data);
+        mActivityResultProcs.run(requestCode, resultCode, data);
     }
 
     protected void onResume() {
