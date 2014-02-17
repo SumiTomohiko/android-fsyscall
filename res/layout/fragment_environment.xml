@@ -18,12 +18,14 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:inputType="text"
             android:hint="@string/label_key"/>
         <EditText
             android:id="@+id/value_edit"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:inputType="text"
             android:hint="@string/label_value"/>
         <Button
             android:id="@+id/add_button"

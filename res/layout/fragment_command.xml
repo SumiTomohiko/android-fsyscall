@@ -3,6 +3,7 @@
 <EditText
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/args_edit"
+    android:inputType="text"
     android:gravity="left|top"
     android:typeface="monospace"
     android:hint="@string/label_command"/>
