@@ -1414,7 +1414,7 @@ public class MainActivity extends FragmentActivity {
     private void setUpRunFragment(RunFragment fragment) {
         fragment.setOnRunListener(new RunOnRunListener());
         fragment.setOnQuitListener(new RunOnQuitListener());
-        fragment.setRunButtonEnabled(mNexecClient.getSessionId() == null);
+        fragment.setRunButtonEnabled(mNexecClient.getSessionId().isNull());
         mRunFragment = fragment;
     }
 
