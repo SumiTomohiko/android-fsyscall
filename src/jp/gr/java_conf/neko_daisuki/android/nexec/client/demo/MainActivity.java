@@ -598,15 +598,14 @@ public class MainActivity extends FragmentActivity {
             public void onQuit();
         }
 
-        public EditText mStdoutEdit;
-        public EditText mStderrEdit;
-
         private MainActivity mActivity;
         private OnRunListener mRunListener;
         private OnQuitListener mQuitListener;
 
         private View mRunButton;
         private View mQuitButton;
+        private EditText mStdoutEdit;
+        private EditText mStderrEdit;
 
         private class RunButtonOnClickListener implements OnClickListener {
 
@@ -1043,7 +1042,7 @@ public class MainActivity extends FragmentActivity {
 
         @Override
         public void onWrite(NexecClient nexecClient, int c) {
-            onOutput(c, mRunFragment.mStdoutEdit);
+            onOutput(c, mRunFragment.getStdoutEditText());
         }
     }
 
@@ -1051,7 +1050,7 @@ public class MainActivity extends FragmentActivity {
 
         @Override
         public void onWrite(NexecClient nexecClient, int c) {
-            onOutput(c, mRunFragment.mStderrEdit);
+            onOutput(c, mRunFragment.getStderrEditText());
         }
     }
 
