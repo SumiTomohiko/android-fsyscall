@@ -1,8 +1,15 @@
 package jp.gr.java_conf.neko_daisuki.android.nexec.client.demo;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -586,16 +593,32 @@ public class MainActivity extends FragmentActivity {
             public void onRun();
         }
 
-        private OnRunListener mRunListener;
+        public interface OnQuitListener {
 
-        private EditText mStdoutEdit;
-        private EditText mStderrEdit;
+            public void onQuit();
+        }
+
+        public EditText mStdoutEdit;
+        public EditText mStderrEdit;
+
+        private MainActivity mActivity;
+        private OnRunListener mRunListener;
+        private OnQuitListener mQuitListener;
+
         private View mRunButton;
+        private View mQuitButton;
 
         private class RunButtonOnClickListener implements OnClickListener {
 
             public void onClick(View view) {
                 mRunListener.onRun();
+            }
+        }
+
+        private class QuitButtonOnClickListener implements OnClickListener {
+
+            public void onClick(View view) {
+                mQuitListener.onQuit();
             }
         }
 
@@ -608,6 +631,8 @@ public class MainActivity extends FragmentActivity {
             mStderrEdit = getEditText(view, R.id.stderr_edit);
             mRunButton = view.findViewById(R.id.run_button);
             mRunButton.setOnClickListener(new RunButtonOnClickListener());
+            mQuitButton = view.findViewById(R.id.quit_button);
+            mQuitButton.setOnClickListener(new QuitButtonOnClickListener());
 
             return view;
         }
@@ -637,10 +662,14 @@ public class MainActivity extends FragmentActivity {
             //showToast("RunFragment.onDetach()");
         }
 
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+            mActivity.setUpRunFragment(this);
+        }
+
         public void onAttach(Activity activity) {
             super.onAttach(activity);
-            //showToast("RunFragment.onAttach()");
-            ((MainActivity)activity).setUpRunFragment(this);
+            mActivity = (MainActivity)activity;
         }
 
         public void onCreate(Bundle savedInstanceState) {
@@ -656,16 +685,25 @@ public class MainActivity extends FragmentActivity {
             return mStderrEdit;
         }
 
+        public void setRunButtonEnabled(boolean enabled) {
+            mRunButton.setEnabled(enabled);
+            mQuitButton.setEnabled(!enabled);
+        }
+
         public void disableRunButton() {
-            mRunButton.setEnabled(false);
+            setRunButtonEnabled(false);
         }
 
         public void enableRunButton() {
-            mRunButton.setEnabled(true);
+            setRunButtonEnabled(true);
         }
 
         public void setOnRunListener(OnRunListener listener) {
             mRunListener = listener;
+        }
+
+        public void setOnQuitListener(OnQuitListener listener) {
+            mQuitListener = listener;
         }
 
         public void clear() {
@@ -721,12 +759,6 @@ public class MainActivity extends FragmentActivity {
         public void run(Intent data) {
             mRunFragment.clear();
             mRunFragment.disableRunButton();
-
-            EditText stdout = mRunFragment.getStdoutEditText();
-            mNexecClient.setStdoutOnGetLineListener(new OnGetLineListener(stdout));
-            EditText stderr = mRunFragment.getStderrEditText();
-            mNexecClient.setStderrOnGetLineListener(new OnGetLineListener(stderr));
-            mNexecClient.setOnFinishListener(new OnFinishListener());
             mNexecClient.execute(data);
         }
     }
@@ -781,20 +813,6 @@ public class MainActivity extends FragmentActivity {
 
         public void onUpdateDocument(String command) {
             mCommand = command;
-        }
-    }
-
-    private static class OnGetLineListener
-            implements NexecClient.OnGetLineListener {
-
-        private EditText mEditText;
-
-        public OnGetLineListener(EditText editText) {
-            mEditText = editText;
-        }
-
-        public void onGetLine(String s) {
-            mEditText.getText().append(s);
         }
     }
 
@@ -1001,11 +1019,47 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
-    private class OnFinishListener implements NexecClient.OnFinishListener {
+    private class OutputListener {
 
-        public void onFinish() {
-            showToast("Finished.");
-            mRunFragment.enableRunButton();
+        private final Charset CHARSET = Charset.forName("UTF-8");
+        private List<Byte> mBuffer = new ArrayList<Byte>();
+
+        protected void onOutput(int c, EditText edit) {
+            mBuffer.add(Byte.valueOf((byte)c));
+            if ((c & 0x80) != 0) {
+                return;
+            }
+            int len = mBuffer.size();
+            byte[] buffer = new byte[len];
+            for (int i = 0; i < len; i++) {
+                buffer[i] = mBuffer.get(i);
+            }
+            edit.getEditableText().append(new String(buffer, CHARSET));
+            mBuffer.clear();
+        }
+    }
+
+    private class OnStdoutListener extends OutputListener implements NexecClient.OnStdoutListener {
+
+        @Override
+        public void onWrite(NexecClient nexecClient, int c) {
+            onOutput(c, mRunFragment.mStdoutEdit);
+        }
+    }
+
+    private class OnStderrListener extends OutputListener implements NexecClient.OnStderrListener {
+
+        @Override
+        public void onWrite(NexecClient nexecClient, int c) {
+            onOutput(c, mRunFragment.mStderrEdit);
+        }
+    }
+
+    private class OnExitListener implements NexecClient.OnExitListener {
+
+        @Override
+        public void onExit(NexecClient nexecClient, int exitCode) {
+            showToast(String.format("Exited at %d", exitCode));
         }
     }
 
@@ -1121,6 +1175,14 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    private class RunOnQuitListener implements RunFragment.OnQuitListener {
+
+        public void onQuit() {
+            mNexecClient.quit();
+            mRunFragment.enableRunButton();
+        }
+    }
+
     private class RunOnRunListener implements RunFragment.OnRunListener {
 
         public void onRun() {
@@ -1149,6 +1211,7 @@ public class MainActivity extends FragmentActivity {
     }
 
     private static final int REQUEST_CONFIRM = 0;
+    private static final String SESSION_ID_FILENAME = "session_id";
 
     // documents
     private String mHost = "neko-daisuki.ddo.jp";
@@ -1195,6 +1258,10 @@ public class MainActivity extends FragmentActivity {
         setContentView(R.layout.activity_main);
 
         mNexecClient = new NexecClient(this);
+        mNexecClient.setOnStdoutListener(new OnStdoutListener());
+        mNexecClient.setOnStderrListener(new OnStderrListener());
+        mNexecClient.setOnExitListener(new OnExitListener());
+
         setUpMenu();
         mReadDialogListner = new ReadPresetDialogListener();
         mWriteDialogListener = new WritePresetDialogListener();
@@ -1232,10 +1299,13 @@ public class MainActivity extends FragmentActivity {
     protected void onResume() {
         super.onResume();
         readPreset(getDefaultPresetPath());
+        mNexecClient.connect(readSessionId());
     }
 
     protected void onPause() {
         super.onPause();
+        writeSessionId(mNexecClient.getSessionId());
+        mNexecClient.disconnect();
         writePreset(getDefaultPresetPath());
     }
 
@@ -1344,6 +1414,8 @@ public class MainActivity extends FragmentActivity {
 
     private void setUpRunFragment(RunFragment fragment) {
         fragment.setOnRunListener(new RunOnRunListener());
+        fragment.setOnQuitListener(new RunOnQuitListener());
+        fragment.setRunButtonEnabled(mNexecClient.getSessionId() == null);
         mRunFragment = fragment;
     }
 
@@ -1373,6 +1445,54 @@ public class MainActivity extends FragmentActivity {
 
     private String getDefaultPresetPath() {
         return String.format("%s/default", getApplicationDirectory());
+    }
+
+    private NexecClient.SessionId readSessionId() {
+        FileInputStream in;
+        try {
+            in = openFileInput(SESSION_ID_FILENAME);
+        }
+        catch (FileNotFoundException e) {
+            return NexecClient.SessionId.NULL;
+        }
+        try {
+            try {
+                Reader reader = new InputStreamReader(in);
+                String line = new BufferedReader(reader).readLine();
+                return line != null
+                        ? new NexecClient.SessionId(line)
+                        : NexecClient.SessionId.NULL;
+            }
+            finally {
+                in.close();
+            }
+        }
+        catch (IOException e) {
+            ActivityUtil.showException(this, "Cannot read file", e);
+            return NexecClient.SessionId.NULL;
+        }
+    }
+
+    private void writeSessionId(NexecClient.SessionId sessionId) {
+        FileOutputStream out;
+        try {
+            out = openFileOutput(SESSION_ID_FILENAME, 0);
+        }
+        catch (FileNotFoundException e) {
+            ActivityUtil.showException(this, "Cannot open file to write", e);
+            return;
+        }
+        try {
+            try {
+                new PrintWriter(out).print(sessionId.toString());
+            }
+            finally {
+                out.close();
+            }
+        }
+        catch (IOException e) {
+            ActivityUtil.showException(this, "Cannot write file", e);
+        }
     }
 }
 

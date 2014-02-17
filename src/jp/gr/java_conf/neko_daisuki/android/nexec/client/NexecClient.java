@@ -1,11 +1,8 @@
 package jp.gr.java_conf.neko_daisuki.android.nexec.client;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -19,7 +16,28 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 
+import jp.gr.java_conf.neko_daisuki.android.nexec.client.demo.ActivityUtil;
+
 public class NexecClient {
+
+    public static class SessionId {
+
+        public static final SessionId NULL = new SessionId("");
+
+        private String mId;
+
+        public SessionId(String id) {
+            mId = id;
+        }
+
+        public String toString() {
+            return mId;
+        }
+
+        public boolean isNull() {
+            return mId.equals("");
+        }
+    }
 
     public static class Settings {
 
@@ -66,125 +84,87 @@ public class NexecClient {
         }
     }
 
-    public interface OnGetLineListener {
+    public interface OnStdoutListener {
 
-        public void onGetLine(String line);
-    }
+        public static class FakeOnStdoutListener implements OnStdoutListener {
 
-    public interface OnFinishListener {
-
-        public void onFinish();
-    }
-
-    private static class FakeOnFinishListener implements OnFinishListener {
-
-        public void onFinish() {
+            @Override
+            public void onWrite(NexecClient nexecClient, int c) {
+            }
         }
+
+        public static final OnStdoutListener NOP = new FakeOnStdoutListener();
+
+        public void onWrite(NexecClient nexecClient, int c);
     }
 
-    private static class FakeOnGetLineListener implements OnGetLineListener {
+    public interface OnStderrListener {
 
-        public void onGetLine(String line) {
+        public static class FakeOnStderrListener implements OnStderrListener {
+
+            @Override
+            public void onWrite(NexecClient nexecClient, int c) {
+            }
         }
+
+        public static final OnStderrListener NOP = new FakeOnStderrListener();
+
+        public void onWrite(NexecClient nexecClient, int c);
+    }
+
+    public interface OnExitListener {
+
+        public class FakeOnExitListener implements OnExitListener {
+
+            @Override
+            public void onExit(NexecClient nexecClient, int exitCode) {
+            }
+        }
+
+        public static final OnExitListener NOP = new FakeOnExitListener();
+
+        public void onExit(NexecClient nexecClient, int exitCode);
     }
 
     private static class IncomingHandler extends Handler {
-
-        private interface UnbindProcedure {
-
-            public void unbind();
-        }
-
-        private class TrueUnbindProcedure implements UnbindProcedure {
-
-            public void unbind() {
-                mNexecClient.mActivity.unbindService(mNexecClient.mConnection);
-            }
-        }
-
-        private class FakeUnbindProcedure implements UnbindProcedure {
-
-            public void unbind() {
-            }
-        }
 
         private abstract class MessageHandler {
 
             public abstract void handle(Message msg);
         }
 
-        private abstract class OutputHandler extends MessageHandler {
+        private class StdoutHandler extends MessageHandler {
 
-            private List<Byte> mOutput;
-
-            public OutputHandler() {
-                mOutput = new LinkedList<Byte>();
+            @Override
+            public void handle(Message msg) {
+                mNexecClient.mOnStdoutListener.onWrite(mNexecClient, msg.arg1);
             }
+        }
+
+        private class StderrHandler extends MessageHandler {
+
+            @Override
+            public void handle(Message msg) {
+                mNexecClient.mOnStderrListener.onWrite(mNexecClient, msg.arg1);
+            }
+        }
+
+        private class ExitHandler extends MessageHandler {
 
             public void handle(Message msg) {
-                byte b = (byte)msg.arg1;
-                if ((b != '\r') && (b != '\n')) {
-                    mOutput.add(Byte.valueOf(b));
-                    return;
-                }
-                int size = mOutput.size();
-                byte[] bytes = new byte[size];
-                for (int i = 0; i < size; i++) {
-                    bytes[i] = mOutput.get(i).byteValue();
-                }
-                String s;
-                try {
-                    s = new String(bytes, "UTF-8");
-                }
-                catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                    return;
-                }
-                callOnGetLineListener(s + "\n");
-                mOutput.clear();
-            }
-
-            protected abstract void callOnGetLineListener(String line);
-        }
-
-        private class StdoutHandler extends OutputHandler {
-
-            protected void callOnGetLineListener(String line) {
-                mNexecClient.mStdoutOnGetLineListener.onGetLine(line);
-            }
-        }
-
-        private class StderrHandler extends OutputHandler {
-
-            protected void callOnGetLineListener(String line) {
-                mNexecClient.mStderrOnGetLineListener.onGetLine(line);
-            }
-        }
-
-        private class FinishedHandler extends MessageHandler {
-
-            public void handle(Message msg) {
-                mUnbindProcedure.unbind();
-                mUnbindProcedure = new FakeUnbindProcedure();
-                mNexecClient.mTimer.cancel();
-                mNexecClient.mOnFinishProc.run();
+                mNexecClient.mOnExitListener.onExit(mNexecClient, msg.arg1);
             }
         }
 
         private NexecClient mNexecClient;
-        private UnbindProcedure mUnbindProcedure;
         private SparseArray<MessageHandler> mHandlers;
 
         public IncomingHandler(NexecClient nexecClient) {
             mNexecClient = nexecClient;
             mHandlers = new SparseArray<MessageHandler>();
-            mHandlers.put(MessageWhat.STDOUT, new StdoutHandler());
-            mHandlers.put(MessageWhat.STDERR, new StderrHandler());
-            mHandlers.put(MessageWhat.FINISHED, new FinishedHandler());
-        }
-
-        public void prepare() {
-            mUnbindProcedure = new TrueUnbindProcedure();
+            mHandlers.put(MessageWhat.MSG_STDOUT, new StdoutHandler());
+            mHandlers.put(MessageWhat.MSG_STDERR, new StderrHandler());
+            mHandlers.put(MessageWhat.MSG_EXIT, new ExitHandler());
         }
 
         public void handleMessage(Message msg) {
@@ -192,44 +172,11 @@ public class NexecClient {
         }
     }
 
-    private class ProxyTask extends TimerTask {
-
-        public void run() {
-            mPollingTask.run();
-        }
-    }
-
-    private interface PollingTask {
-
-        public void run();
-    }
-
-    private class TruePollingTask implements PollingTask {
-
-        public void run() {
-            Message msg = Message.obtain(null, MessageWhat.TELL_STATUS);
-            msg.replyTo = mMessenger;
-            try {
-                mService.send(msg);
-            }
-            catch (RemoteException e) {
-                e.printStackTrace();
-                // TODO: Show toast?
-            }
-        }
-    }
-
-    private class FakePollingTask implements PollingTask {
-
-        public void run() {
-        }
-    }
-
     private class Connection implements ServiceConnection {
 
         public void onServiceConnected(ComponentName className, IBinder service) {
             mService = new Messenger(service);
-            mPollingTask = new TruePollingTask();
+            send(MessageWhat.MSG_CONNECT);
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -237,40 +184,48 @@ public class NexecClient {
         }
     }
 
-    private interface OnFinishProc {
+    private class DisconnectProc implements Runnable {
 
-        public void run();
-    }
-
-    private class TrueOnFinishProc implements OnFinishProc {
-
+        @Override
         public void run() {
-            mOnFinishListener.onFinish();
-            mOnFinishProc = new FakeOnFinishProc();
+            unbind(MessageWhat.MSG_DISCONNECT);
         }
     }
 
-    private class FakeOnFinishProc implements OnFinishProc {
+    private class QuitProc implements Runnable {
 
+        @Override
+        public void run() {
+            unbind(MessageWhat.MSG_QUIT);
+        }
+    }
+
+    private static class Nop implements Runnable {
+
+        @Override
         public void run() {
         }
     }
 
     private static final String PACKAGE = "jp.gr.java_conf.neko_daisuki.android.nexec.client";
+    private static final Runnable NOP = new Nop();
+    private final Runnable DISCONNECT_PROC = new DisconnectProc();
+    private final Runnable QUIT_PROC = new QuitProc();
 
+    // documents
+    private SessionId mSessionId;
+    private OnExitListener mOnExitListener = OnExitListener.NOP;
+    private OnStdoutListener mOnStdoutListener = OnStdoutListener.NOP;
+    private OnStderrListener mOnStderrListener = OnStderrListener.NOP;
+
+    // helpers
     private Activity mActivity;
     private Connection mConnection;
     private IncomingHandler mHandler;
     private Messenger mService;     // Messenger to the service.
     private Messenger mMessenger;   // Messenger from the service.
-    private Timer mTimer;
-    private PollingTask mPollingTask;
-    private OnGetLineListener mStdoutOnGetLineListener;
-    private OnGetLineListener mStderrOnGetLineListener;
-    private OnGetLineListener mFakeOnGetLineListener;
-    private OnFinishListener mOnFinishListener;
-    private OnFinishListener mFakeOnFinishListener;
-    private OnFinishProc mOnFinishProc;
+    private Runnable mDisconnectProc;
+    private Runnable mQuitProc;
 
     public NexecClient(Activity activity) {
         mActivity = activity;
@@ -278,23 +233,23 @@ public class NexecClient {
         mHandler = new IncomingHandler(this);
         mMessenger = new Messenger(mHandler);
 
-        mFakeOnGetLineListener = new FakeOnGetLineListener();
-        mStdoutOnGetLineListener = mFakeOnGetLineListener;
-        mStderrOnGetLineListener = mFakeOnGetLineListener;
-        mFakeOnFinishListener = new FakeOnFinishListener();
-        mOnFinishListener = mFakeOnFinishListener;
+        changeStateToDisconnected();
     }
 
-    public void setOnFinishListener(OnFinishListener l) {
-        mOnFinishListener = l != null ? l : mFakeOnFinishListener;
+    public SessionId getSessionId() {
+        return mSessionId;
     }
 
-    public void setStdoutOnGetLineListener(OnGetLineListener l) {
-        mStdoutOnGetLineListener = l != null ? l : mFakeOnGetLineListener;
+    public void setOnExitListener(OnExitListener l) {
+        mOnExitListener = l != null ? l : OnExitListener.NOP;
     }
 
-    public void setStderrOnGetLineListener(OnGetLineListener l) {
-        mStderrOnGetLineListener = l != null ? l : mFakeOnGetLineListener;
+    public void setOnStdoutListener(OnStdoutListener l) {
+        mOnStdoutListener = l != null ? l : OnStdoutListener.NOP;
+    }
+
+    public void setOnStderrListener(OnStderrListener l) {
+        mOnStderrListener = l != null ? l : OnStderrListener.NOP;
     }
 
     public void request(Settings settings, int requestCode) {
@@ -310,30 +265,34 @@ public class NexecClient {
     }
 
     public void execute(Intent data) {
-        mHandler.prepare();
-        mOnFinishProc = new TrueOnFinishProc();
+        connect(new SessionId(data.getStringExtra("SESSION_ID")));
+    }
+
+    public void connect(SessionId sessionId) {
+        mSessionId = sessionId;
+        if (mSessionId.isNull()) {
+            return;
+        }
 
         Intent intent = new Intent();
         intent.setClassName(PACKAGE, getClassName("MainService"));
-        copySessionId(intent, data);
+        intent.putExtra("SESSION_ID", mSessionId.toString());
         mActivity.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
-        mPollingTask = new FakePollingTask();
-        startTimer();
+        mDisconnectProc = DISCONNECT_PROC;
+        mQuitProc = QUIT_PROC;
     }
 
-    private void startTimer() {
-        mTimer = new Timer();
-        mTimer.schedule(new ProxyTask(), 0, 10);
+    public void disconnect() {
+        mDisconnectProc.run();
+    }
+
+    public void quit() {
+        mQuitProc.run();
     }
 
     private String getClassName(String name) {
         return String.format("%s.%s", PACKAGE, name);
-    }
-
-    private void copySessionId(Intent dest, Intent src) {
-        String key = "SESSION_ID";
-        dest.putExtra(key, src.getStringExtra(key));
     }
 
     private String[] encodeEnvironment(List<Settings.Pair> environment) {
@@ -364,6 +323,29 @@ public class NexecClient {
             buffer.append((c != ':') && (c != '\\') ? "" : "\\").append(c);
         }
         return buffer.toString();
+    }
+
+    private void send(int what) {
+        Message msg = Message.obtain(null, what);
+        msg.replyTo = mMessenger;
+        try {
+            mService.send(msg);
+        }
+        catch (RemoteException e) {
+            ActivityUtil.showException(mActivity, "Cannot send message", e);
+        }
+    }
+
+    private void changeStateToDisconnected() {
+        mSessionId = SessionId.NULL;
+        mDisconnectProc = NOP;
+        mQuitProc = NOP;
+    }
+
+    private void unbind(int what) {
+        send(what);
+        mActivity.unbindService(mConnection);
+        changeStateToDisconnected();
     }
 }
 
