@@ -1483,7 +1483,9 @@ public class MainActivity extends FragmentActivity {
         }
         try {
             try {
-                new PrintWriter(out).print(sessionId.toString());
+                PrintWriter writer = new PrintWriter(out);
+                writer.print(sessionId.toString());
+                writer.flush();
             }
             finally {
                 out.close();
