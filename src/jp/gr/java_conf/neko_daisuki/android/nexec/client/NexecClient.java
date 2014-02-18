@@ -285,10 +285,12 @@ public class NexecClient {
 
     public void disconnect() {
         mDisconnectProc.run();
+        changeStateToDisconnected();
     }
 
     public void quit() {
         mQuitProc.run();
+        changeStateToDisconnected();
     }
 
     private String getClassName(String name) {
@@ -345,7 +347,6 @@ public class NexecClient {
     private void unbind(int what) {
         send(what);
         mActivity.unbindService(mConnection);
-        changeStateToDisconnected();
     }
 }
 
