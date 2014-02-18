@@ -22,7 +22,7 @@ public class NexecClient {
 
     public static class SessionId {
 
-        public static final SessionId NULL = new SessionId("");
+        public static final SessionId NULL = new SessionId("NULL");
 
         private String mId;
 
@@ -35,7 +35,7 @@ public class NexecClient {
         }
 
         public boolean isNull() {
-            return mId.equals("");
+            return mId.equals(NULL.toString());
         }
     }
 
