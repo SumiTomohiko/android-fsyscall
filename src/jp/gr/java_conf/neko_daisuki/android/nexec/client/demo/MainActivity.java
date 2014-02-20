@@ -43,6 +43,7 @@ import android.widget.Toast;
 
 import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient.Settings;
 import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient;
+import jp.gr.java_conf.neko_daisuki.android.nexec.client.SessionId;
 
 public class MainActivity extends FragmentActivity {
 
@@ -752,13 +753,48 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    private interface ResumedProc {
+
+        public void run(SessionId sessionId);
+    }
+
+    private class ExecutingResumedProc implements ResumedProc {
+
+        @Override
+        public void run(SessionId sessionId) {
+            Log.i(LOG_TAG, String.format("Executing session %s.", sessionId));
+            if (!mNexecClient.execute(sessionId)) {
+                String fmt = "Cannot execute session %s.";
+                Log.e(LOG_TAG, String.format(fmt, sessionId));
+                return;
+            }
+            mRunFragment.clear();
+            mRunFragment.disableRunButton();
+        }
+    }
+
+    private class ConnectingResumedProc implements ResumedProc {
+
+        @Override
+        public void run(SessionId sessionId) {
+            String fmt = "Connecting to the service for session %s.";
+            Log.i(LOG_TAG, String.format(fmt, sessionId));
+            if (!mNexecClient.connect(sessionId)) {
+                String fmt2 = "Cannot connect with the service for session %s.";
+                Log.e(LOG_TAG, String.format(fmt2, sessionId));
+            }
+        }
+    }
+
     private class ConfirmOkayProc implements ActivityResultProc {
 
         @Override
         public void run(Intent data) {
-            mRunFragment.clear();
-            mRunFragment.disableRunButton();
-            mNexecClient.execute(data);
+            SessionId sessionId = NexecClient.Util.getSessionId(data);
+            String fmt = "The request was accepted. Session ID is %s.";
+            Log.i(LOG_TAG, String.format(fmt, sessionId));
+            writeSessionId(sessionId);
+            mResumedProc = new ExecutingResumedProc();
         }
     }
 
@@ -1020,21 +1056,45 @@ public class MainActivity extends FragmentActivity {
 
     private class OutputListener {
 
+        private class Action implements Runnable {
+
+            private int mData;
+            private EditText mView;
+
+            public Action(int data, EditText view) {
+                mData = data;
+                mView = view;
+            }
+
+            @Override
+            public void run() {
+                mBuffer.add(Byte.valueOf((byte)mData));
+                if ((mData & 0x80) != 0) {
+                    return;
+                }
+                int len = mBuffer.size();
+                byte[] buffer = new byte[len];
+                for (int i = 0; i < len; i++) {
+                    buffer[i] = mBuffer.get(i);
+                }
+                mView.getEditableText().append(new String(buffer, CHARSET));
+                mBuffer.clear();
+            }
+        }
+
         private final Charset CHARSET = Charset.forName("UTF-8");
         private List<Byte> mBuffer = new ArrayList<Byte>();
 
         protected void onOutput(int c, EditText edit) {
-            mBuffer.add(Byte.valueOf((byte)c));
-            if ((c & 0x80) != 0) {
-                return;
-            }
-            int len = mBuffer.size();
-            byte[] buffer = new byte[len];
-            for (int i = 0; i < len; i++) {
-                buffer[i] = mBuffer.get(i);
-            }
-            edit.getEditableText().append(new String(buffer, CHARSET));
-            mBuffer.clear();
+            runOnUiThread(new Action(c, edit));
+        }
+    }
+
+    private class OnErrorListener implements NexecClient.OnErrorListener {
+
+        @Override
+        public void onError(NexecClient nexecClient, Throwable e) {
+            ActivityUtil.showException(MainActivity.this, "nexec error", e);
         }
     }
 
@@ -1211,6 +1271,7 @@ public class MainActivity extends FragmentActivity {
 
     private static final int REQUEST_CONFIRM = 0;
     private static final String SESSION_ID_FILENAME = "session_id";
+    private static final String LOG_TAG = "activity";
 
     // documents
     private String mHost = "neko-daisuki.ddo.jp";
@@ -1232,6 +1293,7 @@ public class MainActivity extends FragmentActivity {
     private ReadPresetDialogListener mReadDialogListner;
     private WritePresetDialog.Listener mWriteDialogListener;
     private ActivityResultProcs mActivityResultProcs;
+    private ResumedProc mResumedProc = new ConnectingResumedProc();
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -1260,6 +1322,7 @@ public class MainActivity extends FragmentActivity {
         mNexecClient.setOnStdoutListener(new OnStdoutListener());
         mNexecClient.setOnStderrListener(new OnStderrListener());
         mNexecClient.setOnExitListener(new OnExitListener());
+        mNexecClient.setOnErrorListener(new OnErrorListener());
 
         setUpMenu();
         mReadDialogListner = new ReadPresetDialogListener();
@@ -1298,7 +1361,7 @@ public class MainActivity extends FragmentActivity {
     protected void onResume() {
         super.onResume();
         readPreset(getDefaultPresetPath());
-        mNexecClient.connect(readSessionId());
+        mResumedProc.run(readSessionId());
     }
 
     protected void onPause() {
@@ -1446,21 +1509,19 @@ public class MainActivity extends FragmentActivity {
         return String.format("%s/default", getApplicationDirectory());
     }
 
-    private NexecClient.SessionId readSessionId() {
+    private SessionId readSessionId() {
         FileInputStream in;
         try {
             in = openFileInput(SESSION_ID_FILENAME);
         }
         catch (FileNotFoundException e) {
-            return NexecClient.SessionId.NULL;
+            return SessionId.NULL;
         }
         try {
             try {
                 Reader reader = new InputStreamReader(in);
                 String line = new BufferedReader(reader).readLine();
-                return line != null
-                        ? new NexecClient.SessionId(line)
-                        : NexecClient.SessionId.NULL;
+                return line != null ? new SessionId(line) : SessionId.NULL;
             }
             finally {
                 in.close();
@@ -1468,11 +1529,11 @@ public class MainActivity extends FragmentActivity {
         }
         catch (IOException e) {
             ActivityUtil.showException(this, "Cannot read file", e);
-            return NexecClient.SessionId.NULL;
+            return SessionId.NULL;
         }
     }
 
-    private void writeSessionId(NexecClient.SessionId sessionId) {
+    private void writeSessionId(SessionId sessionId) {
         FileOutputStream out;
         try {
             out = openFileOutput(SESSION_ID_FILENAME, 0);

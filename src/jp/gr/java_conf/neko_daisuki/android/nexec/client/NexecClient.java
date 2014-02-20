@@ -7,35 +7,18 @@ import java.util.List;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
-import android.os.Handler;
-import android.util.SparseArray;
+import android.util.Log;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
 import android.os.RemoteException;
-
-import jp.gr.java_conf.neko_daisuki.android.nexec.client.demo.ActivityUtil;
 
 public class NexecClient {
 
-    public static class SessionId {
+    public static class Util {
 
-        public static final SessionId NULL = new SessionId("NULL");
-
-        private String mId;
-
-        public SessionId(String id) {
-            mId = id;
-        }
-
-        public String toString() {
-            return mId;
-        }
-
-        public boolean isNull() {
-            return mId.equals(NULL.toString());
+        public static SessionId getSessionId(Intent data) {
+            return new SessionId(data.getStringExtra("SESSION_ID"));
         }
     }
 
@@ -84,6 +67,20 @@ public class NexecClient {
         }
     }
 
+    public interface OnErrorListener {
+
+        public static class Nop implements OnErrorListener {
+
+            @Override
+            public void onError(NexecClient nexecClient, Throwable e) {
+            }
+        }
+
+        public static final OnErrorListener NOP = new Nop();
+
+        public void onError(NexecClient nexecClient, Throwable e);
+    }
+
     public interface OnStdoutListener {
 
         public static class FakeOnStdoutListener implements OnStdoutListener {
@@ -126,57 +123,60 @@ public class NexecClient {
         public void onExit(NexecClient nexecClient, int exitCode);
     }
 
-    private static class IncomingHandler extends Handler {
+    private class Callback extends INexecCallback.Stub {
 
-        private abstract class MessageHandler {
-
-            public abstract void handle(Message msg);
+        @Override
+        public void writeStdout(int b) throws RemoteException {
+            mOnStdoutListener.onWrite(NexecClient.this, b);
         }
 
-        private class StdoutHandler extends MessageHandler {
+        @Override
+        public void writeStderr(int b) throws RemoteException {
+            mOnStderrListener.onWrite(NexecClient.this, b);
+        }
+    }
 
-            @Override
-            public void handle(Message msg) {
-                mNexecClient.mOnStdoutListener.onWrite(mNexecClient, msg.arg1);
+    private abstract class ConnectedProc {
+
+        public final void run() {
+            try {
+                work();
+            }
+            catch (RemoteException e) {
+                mOnErrorListener.onError(NexecClient.this, e);
             }
         }
 
-        private class StderrHandler extends MessageHandler {
+        public abstract void work() throws RemoteException;
+    }
 
-            @Override
-            public void handle(Message msg) {
-                mNexecClient.mOnStderrListener.onWrite(mNexecClient, msg.arg1);
-            }
+    private class ExecutingConnectedProc extends ConnectedProc {
+
+        @Override
+        public void work() throws RemoteException {
+            mService.execute(mSessionId, mCallback);
         }
+    }
 
-        private class ExitHandler extends MessageHandler {
+    private class ConnectingConnectedProc extends ConnectedProc {
 
-            public void handle(Message msg) {
-                mNexecClient.mOnExitListener.onExit(mNexecClient, msg.arg1);
-            }
-        }
-
-        private NexecClient mNexecClient;
-        private SparseArray<MessageHandler> mHandlers;
-
-        public IncomingHandler(NexecClient nexecClient) {
-            mNexecClient = nexecClient;
-            mHandlers = new SparseArray<MessageHandler>();
-            mHandlers.put(MessageWhat.MSG_STDOUT, new StdoutHandler());
-            mHandlers.put(MessageWhat.MSG_STDERR, new StderrHandler());
-            mHandlers.put(MessageWhat.MSG_EXIT, new ExitHandler());
-        }
-
-        public void handleMessage(Message msg) {
-            mHandlers.get(msg.what).handle(msg);
+        @Override
+        public void work() throws RemoteException {
+            mService.connect(mSessionId, mCallback);
         }
     }
 
     private class Connection implements ServiceConnection {
 
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            mService = new Messenger(service);
-            send(MessageWhat.MSG_CONNECT);
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            mService = INexecService.Stub.asInterface(service);
+            mConnectedProc.run();
+            mDisconnectProc = DISCONNECT_PROC;
+            mQuitProc = QUIT_PROC;
+
+            Log.i(LOG_TAG, "Connected with the service.");
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -188,7 +188,7 @@ public class NexecClient {
 
         @Override
         public void run() {
-            unbind(MessageWhat.MSG_DISCONNECT);
+            unbind();
         }
     }
 
@@ -196,7 +196,13 @@ public class NexecClient {
 
         @Override
         public void run() {
-            unbind(MessageWhat.MSG_QUIT);
+            try {
+                mService.quit(mSessionId);
+            }
+            catch (RemoteException e) {
+                mOnErrorListener.onError(NexecClient.this, e);
+            }
+            unbind();
         }
     }
 
@@ -209,35 +215,42 @@ public class NexecClient {
 
     private static final String PACKAGE = "jp.gr.java_conf.neko_daisuki.android.nexec.client";
     private static final Runnable NOP = new Nop();
+    private static final String LOG_TAG = "NexecClient";
+
     private final Runnable DISCONNECT_PROC = new DisconnectProc();
     private final Runnable QUIT_PROC = new QuitProc();
+    private final ConnectedProc EXECUTING_CONNECTED_PROC = new ExecutingConnectedProc();
+    private final ConnectedProc CONNECTING_CONNECTED_PROC = new ConnectingConnectedProc();
 
     // documents
     private SessionId mSessionId;
     private OnExitListener mOnExitListener = OnExitListener.NOP;
     private OnStdoutListener mOnStdoutListener = OnStdoutListener.NOP;
     private OnStderrListener mOnStderrListener = OnStderrListener.NOP;
+    private OnErrorListener mOnErrorListener = OnErrorListener.NOP;
 
     // helpers
     private Activity mActivity;
     private Connection mConnection;
-    private IncomingHandler mHandler;
-    private Messenger mService;     // Messenger to the service.
-    private Messenger mMessenger;   // Messenger from the service.
+    private INexecService mService;
     private Runnable mDisconnectProc;
     private Runnable mQuitProc;
+    private ConnectedProc mConnectedProc;
+    private INexecCallback mCallback = new Callback();
 
     public NexecClient(Activity activity) {
         mActivity = activity;
         mConnection = new Connection();
-        mHandler = new IncomingHandler(this);
-        mMessenger = new Messenger(mHandler);
-
         changeStateToDisconnected();
+        setOnErrorListener(null);
     }
 
     public SessionId getSessionId() {
         return mSessionId;
+    }
+
+    public void setOnErrorListener(OnErrorListener l) {
+        mOnErrorListener = l != null ? l : OnErrorListener.NOP;
     }
 
     public void setOnExitListener(OnExitListener l) {
@@ -264,23 +277,27 @@ public class NexecClient {
         mActivity.startActivityForResult(intent, requestCode);
     }
 
-    public void execute(Intent data) {
-        connect(new SessionId(data.getStringExtra("SESSION_ID")));
+    public boolean execute(SessionId sessionId) {
+        return connect(sessionId, EXECUTING_CONNECTED_PROC);
     }
 
-    public void connect(SessionId sessionId) {
+    public boolean connect(SessionId sessionId) {
+        return connect(sessionId, CONNECTING_CONNECTED_PROC);
+    }
+
+    public boolean connect(SessionId sessionId, ConnectedProc connectedProc) {
         mSessionId = sessionId;
         if (mSessionId.isNull()) {
-            return;
+            return true;
         }
 
-        Intent intent = new Intent();
-        intent.setClassName(PACKAGE, getClassName("MainService"));
-        intent.putExtra("SESSION_ID", mSessionId.toString());
-        mActivity.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        mConnectedProc = connectedProc;
 
-        mDisconnectProc = DISCONNECT_PROC;
-        mQuitProc = QUIT_PROC;
+        Intent intent = new Intent(INexecService.class.getName());
+        intent.putExtra("SESSION_ID", mSessionId.toString());
+        mActivity.startService(intent);
+        int flags = Context.BIND_AUTO_CREATE;
+        return mActivity.bindService(intent, mConnection, flags);
     }
 
     public void disconnect() {
@@ -327,25 +344,13 @@ public class NexecClient {
         return buffer.toString();
     }
 
-    private void send(int what) {
-        Message msg = Message.obtain(null, what);
-        msg.replyTo = mMessenger;
-        try {
-            mService.send(msg);
-        }
-        catch (RemoteException e) {
-            ActivityUtil.showException(mActivity, "Cannot send message", e);
-        }
-    }
-
     private void changeStateToDisconnected() {
         mSessionId = SessionId.NULL;
         mDisconnectProc = NOP;
         mQuitProc = NOP;
     }
 
-    private void unbind(int what) {
-        send(what);
+    private void unbind() {
         mActivity.unbindService(mConnection);
     }
 }
