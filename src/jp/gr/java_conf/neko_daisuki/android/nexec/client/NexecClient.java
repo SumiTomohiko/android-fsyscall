@@ -134,6 +134,11 @@ public class NexecClient {
         public void writeStderr(int b) throws RemoteException {
             mOnStderrListener.onWrite(NexecClient.this, b);
         }
+
+        @Override
+        public void exit(int status) throws RemoteException {
+            mOnExitListener.onExit(NexecClient.this, status);
+        }
     }
 
     private abstract class ConnectedProc {

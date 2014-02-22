@@ -1116,9 +1116,23 @@ public class MainActivity extends FragmentActivity {
 
     private class OnExitListener implements NexecClient.OnExitListener {
 
+        private class Action implements Runnable {
+
+            private int mExitCode;
+
+            public Action(int exitCode) {
+                mExitCode = exitCode;
+            }
+
+            @Override
+            public void run() {
+                showToast(String.format("Exited at %d", mExitCode));
+            }
+        }
+
         @Override
         public void onExit(NexecClient nexecClient, int exitCode) {
-            showToast(String.format("Exited at %d", exitCode));
+            runOnUiThread(new Action(exitCode));
         }
     }
 
