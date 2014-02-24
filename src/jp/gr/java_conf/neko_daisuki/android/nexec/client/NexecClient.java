@@ -86,13 +86,13 @@ public class NexecClient {
         public static class FakeOnStdoutListener implements OnStdoutListener {
 
             @Override
-            public void onWrite(NexecClient nexecClient, int c) {
+            public void onWrite(NexecClient nexecClient, byte[] buf) {
             }
         }
 
         public static final OnStdoutListener NOP = new FakeOnStdoutListener();
 
-        public void onWrite(NexecClient nexecClient, int c);
+        public void onWrite(NexecClient nexecClient, byte[] buf);
     }
 
     public interface OnStderrListener {
@@ -100,13 +100,13 @@ public class NexecClient {
         public static class FakeOnStderrListener implements OnStderrListener {
 
             @Override
-            public void onWrite(NexecClient nexecClient, int c) {
+            public void onWrite(NexecClient nexecClient, byte[] buf) {
             }
         }
 
         public static final OnStderrListener NOP = new FakeOnStderrListener();
 
-        public void onWrite(NexecClient nexecClient, int c);
+        public void onWrite(NexecClient nexecClient, byte[] buf);
     }
 
     public interface OnExitListener {
@@ -126,13 +126,13 @@ public class NexecClient {
     private class Callback extends INexecCallback.Stub {
 
         @Override
-        public void writeStdout(int b) throws RemoteException {
-            mOnStdoutListener.onWrite(NexecClient.this, b);
+        public void writeStdout(byte[] buf) throws RemoteException {
+            mOnStdoutListener.onWrite(NexecClient.this, buf);
         }
 
         @Override
-        public void writeStderr(int b) throws RemoteException {
-            mOnStderrListener.onWrite(NexecClient.this, b);
+        public void writeStderr(byte[] buf) throws RemoteException {
+            mOnStderrListener.onWrite(NexecClient.this, buf);
         }
 
         @Override

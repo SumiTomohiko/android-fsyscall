@@ -1058,16 +1058,19 @@ public class MainActivity extends FragmentActivity {
 
         private class Action implements Runnable {
 
-            private int mData;
+            private byte[] mData;
             private EditText mView;
 
-            public Action(int data, EditText view) {
+            public Action(byte[] data, EditText view) {
                 mData = data;
                 mView = view;
             }
 
             @Override
             public void run() {
+                // TODO: Handle multibytes characters.
+                mView.getEditableText().append(new String(mData, CHARSET));
+                /*
                 mBuffer.add(Byte.valueOf((byte)mData));
                 if ((mData & 0x80) != 0) {
                     return;
@@ -1079,14 +1082,15 @@ public class MainActivity extends FragmentActivity {
                 }
                 mView.getEditableText().append(new String(buffer, CHARSET));
                 mBuffer.clear();
+                */
             }
         }
 
         private final Charset CHARSET = Charset.forName("UTF-8");
-        private List<Byte> mBuffer = new ArrayList<Byte>();
+        //private List<Byte> mBuffer = new ArrayList<Byte>();
 
-        protected void onOutput(int c, EditText edit) {
-            runOnUiThread(new Action(c, edit));
+        protected void onOutput(byte[] buf, EditText edit) {
+            runOnUiThread(new Action(buf, edit));
         }
     }
 
@@ -1101,16 +1105,16 @@ public class MainActivity extends FragmentActivity {
     private class OnStdoutListener extends OutputListener implements NexecClient.OnStdoutListener {
 
         @Override
-        public void onWrite(NexecClient nexecClient, int c) {
-            onOutput(c, mRunFragment.getStdoutEditText());
+        public void onWrite(NexecClient nexecClient, byte[] buf) {
+            onOutput(buf, mRunFragment.getStdoutEditText());
         }
     }
 
     private class OnStderrListener extends OutputListener implements NexecClient.OnStderrListener {
 
         @Override
-        public void onWrite(NexecClient nexecClient, int c) {
-            onOutput(c, mRunFragment.getStderrEditText());
+        public void onWrite(NexecClient nexecClient, byte[] buf) {
+            onOutput(buf, mRunFragment.getStderrEditText());
         }
     }
 
