@@ -193,6 +193,12 @@ public class NexecClient {
 
         @Override
         public void run() {
+            try {
+                mService.disconnect(mSessionId);
+            }
+            catch (RemoteException e) {
+                mOnErrorListener.onError(NexecClient.this, e);
+            }
             unbind();
         }
     }
