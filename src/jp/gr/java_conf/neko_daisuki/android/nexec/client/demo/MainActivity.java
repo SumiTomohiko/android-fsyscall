@@ -665,6 +665,7 @@ public class MainActivity extends FragmentActivity {
         public void onAttach(Activity activity) {
             super.onAttach(activity);
             mActivity = (MainActivity)activity;
+            mActivity.mRunFragment = this;
         }
 
         public void onCreate(Bundle savedInstanceState) {
@@ -1491,7 +1492,6 @@ public class MainActivity extends FragmentActivity {
         fragment.setOnRunListener(new RunOnRunListener());
         fragment.setOnQuitListener(new RunOnQuitListener());
         fragment.setRunButtonEnabled(mNexecClient.getSessionId().isNull());
-        mRunFragment = fragment;
     }
 
     private void setUpEnvironmentFragment(EnvironmentFragment fragment) {
