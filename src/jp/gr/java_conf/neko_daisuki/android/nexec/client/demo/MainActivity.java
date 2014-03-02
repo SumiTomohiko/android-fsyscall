@@ -644,7 +644,7 @@ public class MainActivity extends FragmentActivity {
 
         public void onResume() {
             super.onResume();
-            //showToast("RunFragment.onResume()");
+            mActivity.setUpRunFragment(this);
         }
 
         public void onStop() {
@@ -660,11 +660,6 @@ public class MainActivity extends FragmentActivity {
         public void onDetach() {
             super.onDetach();
             //showToast("RunFragment.onDetach()");
-        }
-
-        public void onActivityCreated(Bundle savedInstanceState) {
-            super.onActivityCreated(savedInstanceState);
-            mActivity.setUpRunFragment(this);
         }
 
         public void onAttach(Activity activity) {
