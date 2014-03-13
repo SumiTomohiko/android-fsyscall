@@ -49,6 +49,8 @@ public class NexecClient {
         public String host;
         public int port;
         public String[] args;
+        public int xWidth;
+        public int xHeight;
         private List<Pair> environment;
         public String[] files;
         private List<Link> links;
@@ -123,6 +125,20 @@ public class NexecClient {
         public void onExit(NexecClient nexecClient, int exitCode);
     }
 
+    public interface OnXInvalidateListener {
+
+        public static class FakeOnXInvalidateListener implements OnXInvalidateListener {
+
+            @Override
+            public void onInvalidate(int left, int top, int right, int bottom) {
+            }
+        }
+
+        public static final OnXInvalidateListener NOP = new FakeOnXInvalidateListener();
+
+        public void onInvalidate(int left, int top, int right, int bottom);
+    }
+
     private class Callback extends INexecCallback.Stub {
 
         @Override
@@ -138,6 +154,11 @@ public class NexecClient {
         @Override
         public void exit(int status) throws RemoteException {
             mOnExitListener.onExit(NexecClient.this, status);
+        }
+
+        @Override
+        public void xInvalidate(int left, int top, int right, int bottom) throws RemoteException {
+            mOnXInvalidateListener.onInvalidate(left, top, right, bottom);
         }
     }
 
@@ -239,6 +260,7 @@ public class NexecClient {
     private OnStdoutListener mOnStdoutListener = OnStdoutListener.NOP;
     private OnStderrListener mOnStderrListener = OnStderrListener.NOP;
     private OnErrorListener mOnErrorListener = OnErrorListener.NOP;
+    private OnXInvalidateListener mOnXInvalidateListener = OnXInvalidateListener.NOP;
 
     // helpers
     private Activity mActivity;
@@ -264,6 +286,10 @@ public class NexecClient {
         mOnErrorListener = l != null ? l : OnErrorListener.NOP;
     }
 
+    public void setOnXInvalidateListener(OnXInvalidateListener l) {
+        mOnXInvalidateListener = l != null ? l : OnXInvalidateListener.NOP;
+    }
+
     public void setOnExitListener(OnExitListener l) {
         mOnExitListener = l != null ? l : OnExitListener.NOP;
     }
@@ -285,6 +311,8 @@ public class NexecClient {
         intent.putExtra("ENV", encodeEnvironment(settings.environment));
         intent.putExtra("FILES", settings.files);
         intent.putExtra("LINKS", encodeLinks(settings.links));
+        intent.putExtra("X_WIDTH", settings.xWidth);
+        intent.putExtra("X_HEIGHT", settings.xHeight);
         mActivity.startActivityForResult(intent, requestCode);
     }
 
