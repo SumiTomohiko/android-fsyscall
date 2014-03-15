@@ -41,9 +41,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient.Settings;
-import jp.gr.java_conf.neko_daisuki.android.nexec.client.NexecClient;
-import jp.gr.java_conf.neko_daisuki.android.nexec.client.SessionId;
+import jp.gr.java_conf.neko_daisuki.android.nexec.client.share.SessionId;
+import jp.gr.java_conf.neko_daisuki.android.nexec.client.util.NexecClient;
+import jp.gr.java_conf.neko_daisuki.android.nexec.client.util.NexecClient.Settings;
 
 public class MainActivity extends FragmentActivity {
 
