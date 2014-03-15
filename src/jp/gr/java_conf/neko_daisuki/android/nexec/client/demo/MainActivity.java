@@ -1,14 +1,10 @@
 package jp.gr.java_conf.neko_daisuki.android.nexec.client.demo;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1531,14 +1527,7 @@ public class MainActivity extends FragmentActivity {
             return SessionId.NULL;
         }
         try {
-            try {
-                Reader reader = new InputStreamReader(in);
-                String line = new BufferedReader(reader).readLine();
-                return line != null ? new SessionId(line) : SessionId.NULL;
-            }
-            finally {
-                in.close();
-            }
+            return NexecClient.Util.readSessionId(in);
         }
         catch (IOException e) {
             ActivityUtil.showException(this, "Cannot read file", e);
@@ -1557,9 +1546,7 @@ public class MainActivity extends FragmentActivity {
         }
         try {
             try {
-                PrintWriter writer = new PrintWriter(out);
-                writer.print(sessionId.toString());
-                writer.flush();
+                NexecClient.Util.writeSessionId(out, sessionId);
             }
             finally {
                 out.close();
