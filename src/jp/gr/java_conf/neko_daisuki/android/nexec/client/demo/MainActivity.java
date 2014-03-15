@@ -40,6 +40,7 @@ import android.widget.Toast;
 import jp.gr.java_conf.neko_daisuki.android.nexec.client.share.SessionId;
 import jp.gr.java_conf.neko_daisuki.android.nexec.client.util.NexecClient;
 import jp.gr.java_conf.neko_daisuki.android.nexec.client.util.NexecClient.Settings;
+import jp.gr.java_conf.neko_daisuki.android.nexec.client.util.NexecUtil;
 
 public class MainActivity extends FragmentActivity {
 
@@ -782,7 +783,7 @@ public class MainActivity extends FragmentActivity {
 
         @Override
         public void run(Intent data) {
-            SessionId sessionId = NexecClient.Util.getSessionId(data);
+            SessionId sessionId = NexecUtil.getSessionId(data);
             String fmt = "The request was accepted. Session ID is %s.";
             Log.i(LOG_TAG, String.format(fmt, sessionId));
             writeSessionId(sessionId);
@@ -1527,7 +1528,7 @@ public class MainActivity extends FragmentActivity {
             return SessionId.NULL;
         }
         try {
-            return NexecClient.Util.readSessionId(in);
+            return NexecUtil.readSessionId(in);
         }
         catch (IOException e) {
             ActivityUtil.showException(this, "Cannot read file", e);
@@ -1546,7 +1547,7 @@ public class MainActivity extends FragmentActivity {
         }
         try {
             try {
-                NexecClient.Util.writeSessionId(out, sessionId);
+                NexecUtil.writeSessionId(out, sessionId);
             }
             finally {
                 out.close();
