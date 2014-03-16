@@ -774,7 +774,10 @@ public class MainActivity extends FragmentActivity {
             Log.i(LOG_TAG, String.format(fmt, sessionId));
             if (!mNexecClient.connect(sessionId)) {
                 String fmt2 = "Cannot connect with the service for session %s.";
-                Log.e(LOG_TAG, String.format(fmt2, sessionId));
+                String msg = String.format(fmt2, sessionId);
+                Log.e(LOG_TAG, msg);
+                int duration = Toast.LENGTH_LONG;
+                Toast.makeText(MainActivity.this, msg, duration).show();
             }
         }
     }
