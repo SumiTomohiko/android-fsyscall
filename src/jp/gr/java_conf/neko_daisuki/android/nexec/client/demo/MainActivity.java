@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Intent;
@@ -847,8 +846,7 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
-    @SuppressLint("ValidFragment")
-    private static class BaseFragment extends Fragment {
+    public static class BaseFragment extends Fragment {
 
         public interface OnUpdateViewListener {
 
