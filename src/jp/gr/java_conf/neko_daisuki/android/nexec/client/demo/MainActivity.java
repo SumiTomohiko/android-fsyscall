@@ -1094,6 +1094,11 @@ public class MainActivity extends FragmentActivity {
         public void onError(NexecClient nexecClient, Throwable e) {
             ActivityUtil.showException(MainActivity.this, "nexec error", e);
         }
+
+        @Override
+        public void onServiceError(NexecClient nexecClient, String message) {
+            nexecClient.quit();
+        }
     }
 
     private class OnStdoutListener extends OutputListener implements NexecClient.OnStdoutListener {
